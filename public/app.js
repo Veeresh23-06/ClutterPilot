@@ -5,7 +5,7 @@
  * Strict Guarantees:
  * - 100% in-browser state. Zero writing of file contents to localStorage,
  *   sessionStorage, IndexedDB, cookies, or remote servers.
- * - Local loopback only (127.0.0.1:3000 -> 127.0.0.1:11434).
+ * - Cloud Hosted · File Organization Available
  * - Client-side SHA-256 duplicate detection.
  * - Client-side ZIP generation via JSZip.
  * - Original files on disk are never altered.
