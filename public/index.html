@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ClutterPilot — Understand your digital clutter, preview a smarter structure, and organize your files without risking the originals. 100% local, privacy-first AI file organizer.">
+  <meta name="theme-color" content="#FAF8F5">
+  <title>ClutterPilot — Your files are a mess. Fixing them shouldn't be another task.</title>
+
+  <!-- Local stylesheets and client application (Zero external CDN links) -->
+  <link rel="stylesheet" href="/style.css">
+  <script src="/landing.js" defer></script>
+</head>
+<body>
+
+  <!-- Navigation Bar (Matching 01_landing_page.png) -->
+  <header class="navbar" id="top">
+    <div class="nav-container">
+      <a href="/" class="brand" aria-label="ClutterPilot Home">
+        <span class="brand-icon">
+          <!-- Folder with Sprout / Leaf SVG -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+            <path d="M12 11c0 3.5 2.5 5 2.5 5s-2.5-1.5-2.5-5Z" fill="currentColor" fill-opacity="0.3"/>
+            <path d="M12 16v-5"/>
+            <path d="M12 13c-1.5-1-2.5-1-3 0 1 1.5 3 0 3 0Z" fill="currentColor" fill-opacity="0.3"/>
+          </svg>
+        </span>
+        <span class="brand-text">ClutterPilot</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Main Navigation">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Live Local AI Status Pill -->
+        <div id="model-status" class="model-badge" title="Local Ollama AI Status (127.0.0.1)" role="status" aria-live="polite">
+          <span class="status-dot checking"></span>
+          <span class="status-text">Checking local AI...</span>
+        </div>
+
+        <!-- Dark/Light Theme Switcher -->
+        <button id="theme-toggle" class="icon-btn" aria-label="Switch between dark and light theme" title="Toggle Theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          </svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+
+        <!-- Primary Header CTA: Redirect to dedicated Workspace page -->
+        <a href="/workspace" class="btn btn-primary btn-sm">Get Started &rarr;</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section (Matching 01_landing_page.png) -->
+    <section class="hero-section">
+      <div class="hero-container">
+        <div class="hero-content">
+          <div class="eyebrow-chip">
+            <span class="chip-lock">🔒</span>
+            <span>100% Local &bull; No files stored &bull; Open Source</span>
+          </div>
+
+          <h1 class="hero-headline">
+            Your files are a mess.<br>
+            Fixing them shouldn&rsquo;t<br>
+            be another task.
+          </h1>
+
+          <p class="hero-subtext">
+            Understand your digital clutter, preview a smarter structure, and organize your files without risking the originals.
+          </p>
+
+          <div class="hero-cta-group">
+            <a href="/workspace" class="btn btn-primary btn-lg">
+              Get Started &rarr;
+            </a>
+            <a href="/workspace?demo=true" class="btn btn-secondary btn-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
+              </svg>
+              Watch Demo
+            </a>
+          </div>
+        </div>
+
+        <!-- Before & After Visual Graphic (Matching 01_landing_page.png) -->
+        <div class="hero-visual" aria-hidden="true">
+          <div class="visual-comparison-container">
+            
+            <!-- Before Card -->
+            <div class="visual-card visual-card-before">
+              <div class="visual-pill pill-before">
+                <span class="pill-icon">📎</span> Before
+              </div>
+              <div class="window-header">
+                <span class="folder-icon">📁</span>
+                <span class="window-title">Downloads (56 files)</span>
+              </div>
+              <ul class="messy-files-list">
+                <li class="file-item file-img">
+                  <span class="badge-icon icon-jpg">🖼</span>
+                  <span class="file-name">IMG_2026_01.jpg</span>
+                </li>
+                <li class="file-item file-pdf">
+                  <span class="badge-icon icon-pdf">📄</span>
+                  <span class="file-name">document_001.pdf</span>
+                </li>
+                <li class="file-item file-doc">
+                  <span class="badge-icon icon-doc">📝</span>
+                  <span class="file-name">notes_final_FINAL.docx</span>
+                </li>
+                <li class="file-item file-pdf">
+                  <span class="badge-icon icon-pdf">📄</span>
+                  <span class="file-name">download (4).pdf</span>
+                </li>
+                <li class="file-item file-img">
+                  <span class="badge-icon icon-png">🖼</span>
+                  <span class="file-name">screenshot.png</span>
+                </li>
+                <li class="file-item file-doc">
+                  <span class="badge-icon icon-doc">📝</span>
+                  <span class="file-name">assignment2.doc</span>
+                </li>
+                <li class="file-item file-pdf">
+                  <span class="badge-icon icon-pdf">📄</span>
+                  <span class="file-name">report_new.pdf</span>
+                </li>
+                <li class="file-item file-txt">
+                  <span class="badge-icon icon-txt">📋</span>
+                  <span class="file-name">Untitled (3).txt</span>
+                </li>
+              </ul>
+              <div class="messy-dots">&vellip;</div>
+            </div>
+
+            <!-- Transition Arrow -->
+            <div class="transformation-arrow">
+              <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
+                <path d="M12 36C28 36 34 22 52 24" stroke="#1E3B29" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M46 16L54 24L44 30" stroke="#1E3B29" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- After Card -->
+            <div class="visual-card visual-card-after">
+              <div class="visual-pill pill-after">
+                <span class="pill-sparkle">✦</span> After
+              </div>
+              <div class="window-header">
+                <span class="folder-icon folder-organized">📁</span>
+                <span class="window-title">Organized ✨</span>
+              </div>
+              <div class="tree-preview">
+                <div class="tree-node tree-folder root-folder">
+                  <span class="tree-icon">📁</span>
+                  <span class="tree-label font-bold">Documents</span>
+                </div>
+                <div class="tree-branch">
+                  <div class="tree-node tree-subfolder">
+                    <span class="tree-icon">📁</span>
+                    <span class="tree-label">Assignments</span>
+                  </div>
+                  <div class="tree-node tree-subfolder">
+                    <span class="tree-icon">📁</span>
+                    <span class="tree-label">Lecture Notes</span>
+                  </div>
+                  <div class="tree-node tree-subfolder">
+                    <span class="tree-icon">📁</span>
+                    <span class="tree-label">Projects</span>
+                  </div>
+                </div>
+                <div class="tree-node tree-folder">
+                  <span class="tree-icon">📁</span>
+                  <span class="tree-label font-bold">Receipts</span>
+                </div>
+                <div class="tree-node tree-folder">
+                  <span class="tree-icon">📁</span>
+                  <span class="tree-label font-bold">Images</span>
+                </div>
+                <div class="tree-node tree-folder">
+                  <span class="tree-icon">📁</span>
+                  <span class="tree-label font-bold">Personal</span>
+                </div>
+                <div class="tree-node tree-folder">
+                  <span class="tree-icon">📁</span>
+                  <span class="tree-label font-bold">Other</span>
+                </div>
+              </div>
+
+              <!-- Potted plant illustration accessory -->
+              <div class="plant-accessory">
+                <div class="plant-pot">
+                  <div class="leaf leaf-1"></div>
+                  <div class="leaf leaf-2"></div>
+                  <div class="leaf leaf-3"></div>
+                  <div class="leaf leaf-4"></div>
+                  <div class="pot-body"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Value Props Banner (4 Columns - Matching 01_landing_page.png) -->
+    <section class="value-props-banner" aria-label="Core Guarantees">
+      <div class="value-props-container">
+        
+        <div class="prop-item">
+          <div class="prop-icon-circle">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </div>
+          <div class="prop-text">
+            <h3 class="prop-title">100% Local Processing</h3>
+            <p class="prop-desc">Files stay on your device</p>
+          </div>
+        </div>
+
+        <div class="prop-item">
+          <div class="prop-icon-circle">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+          </div>
+          <div class="prop-text">
+            <h3 class="prop-title">No Data Stored</h3>
+            <p class="prop-desc">Files are not saved or uploaded</p>
+          </div>
+        </div>
+
+        <div class="prop-item">
+          <div class="prop-icon-circle">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z"/>
+              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z"/>
+            </svg>
+          </div>
+          <div class="prop-text">
+            <h3 class="prop-title">AI-Powered Organization</h3>
+            <p class="prop-desc">Smarter names and folders</p>
+          </div>
+        </div>
+
+        <div class="prop-item">
+          <div class="prop-icon-circle">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <div class="prop-text">
+            <h3 class="prop-title">Open Source</h3>
+            <p class="prop-desc">Transparent, community-driven</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Why ClutterPilot Section (Features matching 01_landing_page.png) -->
+    <section class="features-section" id="features">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-eyebrow">WHY CLUTTERPILOT</span>
+          <h2 class="section-title">More than just renaming files.</h2>
+          <p class="section-subtitle">A smarter, safer, and faster way to declutter your digital life.</p>
+        </div>
+
+        <div class="features-grid">
+          
+          <div class="feature-card">
+            <div class="feature-icon-wrapper icon-audit">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            <h3 class="feature-heading">Clutter Audit</h3>
+            <p class="feature-text">Find duplicate files, unclear names, and file types at a glance.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper icon-ai">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+              </svg>
+            </div>
+            <h3 class="feature-heading">AI Understanding</h3>
+            <p class="feature-text">Get meaningful names and folder suggestions using local AI.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper icon-preview">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+              </svg>
+            </div>
+            <h3 class="feature-heading">Preview &amp; Control</h3>
+            <p class="feature-text">Review, edit, approve or skip every suggestion.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper icon-export">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <h3 class="feature-heading">Safe Export</h3>
+            <p class="feature-text">Download an organized ZIP without changing your originals.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section (Matching 01_landing_page.png) -->
+    <section class="how-it-works-section" id="how-it-works">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-eyebrow">WORKFLOW</span>
+          <h2 class="section-title">How ClutterPilot works.</h2>
+          <p class="section-subtitle">Three straightforward steps with absolute safety for your originals.</p>
+        </div>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">01</div>
+            <h3 class="step-title">Select Files or Folder</h3>
+            <p class="step-description">Drag and drop any cluttered folder or documents. SHA-256 duplicate checking and file inspection happen right inside your browser memory.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">02</div>
+            <h3 class="step-title">Local AI Context Analysis</h3>
+            <p class="step-description">Your on-device Ollama model (Qwen 2.5) evaluates document snippets directly on your machine. You get meaningful, context-aware filenames and category suggestions with zero cloud exposure.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">03</div>
+            <h3 class="step-title">Export Organized ZIP</h3>
+            <p class="step-description">ClutterPilot generates a clean, neatly arranged ZIP archive in the browser. Your original files on disk remain completely untouched.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy Center Section (Matching 07_privacy_center.png) -->
+    <section class="privacy-section" id="privacy">
+      <div class="section-container">
+        <div class="section-header">
+          <h2 class="section-title">Your files stay on your device</h2>
+          <p class="section-subtitle">We built ClutterPilot with privacy-first principles.</p>
+        </div>
+
+        <div class="privacy-grid">
+          
+          <div class="privacy-card">
+            <div class="privacy-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+            <h3 class="privacy-heading">100% On-Device AI</h3>
+            <p class="privacy-text">All inference runs locally via Ollama on your machine. Your documents, photos, and assignments are never sent to external servers or used to train third-party models.</p>
+          </div>
+
+          <div class="privacy-card">
+            <div class="privacy-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <h3 class="privacy-heading">Temporary Files Only</h3>
+            <p class="privacy-text">Files are processed in temporary memory storage and automatically deleted after your session.</p>
+          </div>
+
+          <div class="privacy-card">
+            <div class="privacy-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h3 class="privacy-heading">No Data Collection</h3>
+            <p class="privacy-text">We don&rsquo;t collect, store, or track your files, personal information, or usage data.</p>
+          </div>
+
+          <div class="privacy-card">
+            <div class="privacy-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+              </svg>
+            </div>
+            <h3 class="privacy-heading">Open Source</h3>
+            <p class="privacy-text">Our code is open source, so you can see exactly how your files are handled.</p>
+          </div>
+
+        </div>
+
+        <div class="privacy-action-center">
+          <button type="button" id="btn-open-privacy-modal" class="btn btn-outline-forest btn-md">
+            Learn more about our privacy approach &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section (Matching 08_faq_page.png) -->
+    <section class="faq-section" id="faq">
+      <div class="section-container faq-container">
+        <div class="section-header">
+          <h2 class="section-title">Frequently Asked Questions</h2>
+          <p class="section-subtitle">Everything you need to know about ClutterPilot.</p>
+        </div>
+
+        <div class="faq-accordion-list">
+          
+          <div class="faq-item open">
+            <button class="faq-question" type="button" aria-expanded="true">
+              <span class="faq-icon">📄</span>
+              <span class="faq-text">Do you store my files?</span>
+              <span class="faq-chevron">&minus;</span>
+            </button>
+            <div class="faq-answer">
+              <p>No. Your files never leave your device. All processing happens locally using your own AI model (Ollama). Temporary memory representations are automatically deleted when your session is closed or cleared.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button" aria-expanded="false">
+              <span class="faq-icon">📄</span>
+              <span class="faq-text">Which file types are supported?</span>
+              <span class="faq-chevron">+</span>
+            </button>
+            <div class="faq-answer" hidden>
+              <p>ClutterPilot inspects all file types for duplicates and metadata. For content-aware AI categorization, we support PDF documents, Microsoft Word (.docx), plain text (.txt, .log), Markdown (.md), and images (.png, .jpg, .webp). Other formats are neatly organized by extension.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button" aria-expanded="false">
+              <span class="faq-icon">📄</span>
+              <span class="faq-text">Is my data safe?</span>
+              <span class="faq-chevron">+</span>
+            </button>
+            <div class="faq-answer" hidden>
+              <p>Yes. The application runs locally at <code>http://127.0.0.1:3000</code> and binds strictly to your loopback address. It has zero cloud endpoints, zero tracking pixels, and zero remote analytics. Your original files on disk are never altered or deleted.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button" aria-expanded="false">
+              <span class="faq-icon">📄</span>
+              <span class="faq-text">Do I need an internet connection?</span>
+              <span class="faq-chevron">+</span>
+            </button>
+            <div class="faq-answer" hidden>
+              <p>No. ClutterPilot is 100% offline capable. All libraries, fonts, and scripts are served locally from your machine. Both the Express server and Ollama run entirely offline on your local network interface.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button" aria-expanded="false">
+              <span class="faq-icon">📄</span>
+              <span class="faq-text">Can I edit the AI suggestions?</span>
+              <span class="faq-chevron">+</span>
+            </button>
+            <div class="faq-answer" hidden>
+              <p>Absolutely. Before exporting, every single filename and folder category can be edited or skipped. You maintain total manual control over what gets included in the final organized ZIP file.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button" aria-expanded="false">
+              <span class="faq-icon">📄</span>
+              <span class="faq-text">What if the AI gives a wrong suggestion or is offline?</span>
+              <span class="faq-chevron">+</span>
+            </button>
+            <div class="faq-answer" hidden>
+              <p>ClutterPilot includes deterministic rule-based organization heuristics. If Ollama is offline or times out, ClutterPilot seamlessly falls back to smart rule-based categorizing so your workflow is never interrupted.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-brand-column">
+        <div class="brand footer-brand">
+          <span class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+              <path d="M12 16v-5"/>
+            </svg>
+          </span>
+          <span class="brand-text">ClutterPilot</span>
+        </div>
+        <p class="footer-tagline">&ldquo;Your files are a mess. Fixing them shouldn&rsquo;t be another task.&rdquo;</p>
+        <div class="footer-privacy-pill">
+          <span class="status-dot online"></span>
+          <span>Local Loopback Only &bull; 127.0.0.1:3000</span>
+        </div>
+      </div>
+
+      <div class="footer-links-group">
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <a href="/workspace">Get Started (Workspace)</a>
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How It Works</a>
+        </div>
+        <div class="footer-col">
+          <h4>Trust &amp; Privacy</h4>
+          <a href="#privacy">Privacy Principles</a>
+          <a href="#faq">FAQ</a>
+          <a href="/workspace">Launch Workspace</a>
+        </div>
+        <div class="footer-col">
+          <h4>System</h4>
+          <span class="footer-meta">Model: qwen2.5:1.5b</span>
+          <span class="footer-meta">Environment: Localhost</span>
+          <span class="footer-meta">&copy; 2026 ClutterPilot</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- PRIVACY DETAILS MODAL -->
+  <dialog id="privacy-modal" class="custom-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">ClutterPilot Privacy Architecture</h3>
+        <button type="button" id="btn-close-privacy-modal" class="modal-close-btn" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body privacy-modal-body">
+        <div class="privacy-audit-badge">
+          <span class="badge-icon">🛡️</span>
+          <div>
+            <strong>Verified Local-First Architecture</strong>
+            <p>Every byte of your data remains on this personal computer.</p>
+          </div>
+        </div>
+
+        <h4>1. In-Browser File Selection</h4>
+        <p>When you select files, the browser loads file metadata and binary buffers directly into JavaScript memory. No network payload is created, and nothing is transmitted over the internet.</p>
+
+        <h4>2. Client-Side Hash &amp; Duplicate Check</h4>
+        <p>Exact duplicate detection runs entirely inside your browser using the native Web Crypto API (<code>crypto.subtle.digest('SHA-256')</code>). It never hits an external database.</p>
+
+        <h4>3. Local AI Inference via Ollama</h4>
+        <p>When you click &ldquo;Start AI Analysis&rdquo;, ClutterPilot sends only bounded text snippets (truncated to ~250 characters) and file metadata to the local Express server on <code>127.0.0.1:3000</code>. Express forwards this request exclusively to your local Ollama instance on <code>127.0.0.1:11434</code> running the <code>qwen2.5:1.5b</code> model. Zero third-party cloud APIs are contacted.</p>
+
+        <h4>4. Zero Storage &amp; Forensic Cleanliness</h4>
+        <p>ClutterPilot writes zero user file contents to <code>localStorage</code>, <code>sessionStorage</code>, <code>IndexedDB</code>, cookies, or disk caches. When you close the tab or click &ldquo;Reset Workspace&rdquo;, in-memory references are wiped immediately.</p>
+
+        <h4>5. Safe ZIP Generation</h4>
+        <p>The organized archive is assembled completely client-side via JSZip in your browser memory and downloaded directly to your Downloads folder. Your original source files remain completely untouched.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-close-privacy-bottom" class="btn btn-primary btn-sm">Understood</button>
+      </div>
+    </div>
+  </dialog>
+
+</body>
+</html>

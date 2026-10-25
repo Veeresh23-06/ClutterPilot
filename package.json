@@ -1,0 +1,25 @@
+{
+  "name": "clutterpilot",
+  "version": "1.0.0",
+  "description": "ClutterPilot — Understand your digital clutter, preview a smarter structure, and organize your files without risking the originals.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "file-organization",
+    "privacy-first",
+    "local-ai",
+    "ollama",
+    "qwen",
+    "productivity"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.3.0",
+    "jszip": "^3.10.1",
+    "pdfjs-dist": "^4.10.38"
+  }
+}

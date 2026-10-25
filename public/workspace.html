@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ClutterPilot Workspace — 100% local, privacy-first file organization on your device.">
+  <meta name="theme-color" content="#FAF8F5">
+  <title>ClutterPilot Workspace — Organize Your Files</title>
+
+  <!-- Local stylesheets and client libraries (Zero external CDN links) -->
+  <link rel="stylesheet" href="/style.css">
+  <script src="/vendor/jszip.min.js"></script>
+  <script src="/app.js" defer></script>
+</head>
+<body class="workspace-page-body">
+
+  <!-- Workspace Top Navigation -->
+  <header class="navbar" id="top">
+    <div class="nav-container">
+      <div class="brand-group">
+        <a href="/" class="brand" aria-label="ClutterPilot Home">
+          <span class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+              <path d="M12 11c0 3.5 2.5 5 2.5 5s-2.5-1.5-2.5-5Z" fill="currentColor" fill-opacity="0.3"/>
+              <path d="M12 16v-5"/>
+              <path d="M12 13c-1.5-1-2.5-1-3 0 1 1.5 3 0 3 0Z" fill="currentColor" fill-opacity="0.3"/>
+            </svg>
+          </span>
+          <span class="brand-text">ClutterPilot</span>
+        </a>
+        <a href="/" class="nav-back-link" title="Return to ClutterPilot landing page">
+          &larr; Back to Home
+        </a>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Live Local AI Status Pill -->
+        <div id="model-status" class="model-badge" title="Local Ollama AI Status (127.0.0.1)" role="status" aria-live="polite">
+          <span class="status-dot checking"></span>
+          <span class="status-text">Checking local AI...</span>
+        </div>
+
+        <!-- Dark/Light Theme Switcher -->
+        <button id="theme-toggle" class="icon-btn" aria-label="Switch between dark and light theme" title="Toggle Theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          </svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace-main-content">
+    <section class="workspace-section" id="workspace" aria-label="ClutterPilot File Workspace">
+      <div class="workspace-container">
+        
+        <!-- Workspace Top Bar: Steps + Privacy Badge + Reset Action -->
+        <div class="workspace-nav-bar">
+          <div class="workspace-steps-indicator" role="tablist" aria-label="Workflow progress">
+            <div class="step-pill active" id="pill-step-1" data-step="1">1. Select Files</div>
+            <span class="step-arrow">&rarr;</span>
+            <div class="step-pill" id="pill-step-2" data-step="2">2. Scanning</div>
+            <span class="step-arrow">&rarr;</span>
+            <div class="step-pill" id="pill-step-3" data-step="3">3. Clutter Audit</div>
+            <span class="step-arrow">&rarr;</span>
+            <div class="step-pill" id="pill-step-4" data-step="4">4. AI Review</div>
+            <span class="step-arrow">&rarr;</span>
+            <div class="step-pill" id="pill-step-5" data-step="5">5. Export</div>
+          </div>
+
+          <div class="workspace-actions">
+            <!-- Privacy Assurance Badge -->
+            <div class="workspace-privacy-badge" title="Zero remote storage: Your files and actions are processed strictly in browser memory on this device.">
+              <span class="privacy-badge-icon">🛡️</span>
+              <span class="privacy-badge-text">In-Memory Only &bull; Nothing saved to our website</span>
+            </div>
+
+            <!-- Reset Workspace Button -->
+            <button id="clear-session-btn" class="btn btn-outline-secondary btn-sm" title="Clear in-memory files and reset workspace">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+              Reset Workspace
+            </button>
+          </div>
+        </div>
+
+        <!-- Notification Toast Area -->
+        <div id="workspace-notification" class="workspace-notification" role="alert" aria-live="polite" hidden></div>
+
+        <!-- VIEW 1: FILE SELECTION (Matching 02_file_selection.png) -->
+        <div id="view-selection" class="workspace-view active">
+          <div class="view-header text-center">
+            <h2 class="view-title">Let&rsquo;s clean up your files</h2>
+            <p class="view-subtitle">Select files or a folder from your device. Everything stays on your computer.</p>
+          </div>
+
+          <div class="selection-grid">
+            
+            <!-- Left: Dropzone -->
+            <div class="dropzone-card" id="dropzone">
+              <input type="file" id="file-input-files" multiple hidden>
+              <input type="file" id="file-input-folder" webkitdirectory directory multiple hidden>
+
+              <div class="dropzone-inner">
+                <div class="dropzone-icon">
+                  <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                    <path d="M12 12v9"/>
+                    <path d="m8 16 4-4 4 4"/>
+                  </svg>
+                </div>
+                <h3 class="dropzone-headline">Drag &amp; drop files or a folder here</h3>
+                <span class="dropzone-or">or</span>
+                <div class="dropzone-buttons">
+                  <button type="button" id="btn-choose-files" class="btn btn-primary btn-md">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+                    </svg>
+                    Choose Files
+                  </button>
+                  <button type="button" id="btn-choose-folder" class="btn btn-outline btn-md">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Choose Folder
+                  </button>
+                </div>
+              </div>
+
+              <div class="dropzone-footer">
+                <p class="text-supported">Supported: PDF, DOCX, TXT, MD, Images (PNG, JPG), and more</p>
+                <p class="text-privacy-guarantee">No files are uploaded to any server. All processing happens locally.</p>
+              </div>
+            </div>
+
+            <!-- Right: Try Demo Card -->
+            <div class="demo-card">
+              <h3 class="demo-title">Try a demo instead</h3>
+              <p class="demo-subtitle">Explore with sample files (no personal files needed).</p>
+
+              <button type="button" id="btn-use-sample" class="btn btn-outline-forest btn-full">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+                </svg>
+                Use Sample Files
+              </button>
+
+              <ul class="demo-check-list">
+                <li>
+                  <span class="check-circle">&check;</span>
+                  <span>100% local processing</span>
+                </li>
+                <li>
+                  <span class="check-circle">&check;</span>
+                  <span>Temporary files only</span>
+                </li>
+                <li>
+                  <span class="check-circle">&check;</span>
+                  <span>Auto-cleaned after session</span>
+                </li>
+                <li>
+                  <span class="check-circle">&check;</span>
+                  <span>No data sent to cloud</span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- VIEW 2: SCANNING PROGRESS (Matching 03_scanning_progress.png) -->
+        <div id="view-scanning" class="workspace-view" hidden>
+          <div class="view-header">
+            <h2 class="view-title">Scanning your files...</h2>
+            <p class="view-subtitle">Analyzing file types, duplicates and basic information.</p>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="progress-bar-container">
+            <div class="progress-bar-track">
+              <div id="scanning-progress-bar" class="progress-bar-fill" style="width: 15%;"></div>
+            </div>
+            <span id="scanning-progress-pct" class="progress-pct-label">15%</span>
+          </div>
+
+          <!-- 4 Stat Cards in a row -->
+          <div class="stat-cards-grid">
+            <div class="stat-card">
+              <div class="stat-icon-badge stat-blue">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <div id="scan-stat-total" class="stat-num">0</div>
+              <div class="stat-label">Total Files</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-badge stat-green">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/>
+                  <rect x="14" y="3" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+              </div>
+              <div id="scan-stat-types" class="stat-num">0</div>
+              <div class="stat-label">File Types</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-badge stat-red">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </div>
+              <div id="scan-stat-duplicates" class="stat-num">0</div>
+              <div class="stat-label">Possible Duplicates</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-badge stat-amber">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <div id="scan-stat-review" class="stat-num">0</div>
+              <div class="stat-label">Need Review</div>
+            </div>
+          </div>
+
+          <!-- Timeline Checklist & Folder Illustration -->
+          <div class="scanning-details-split">
+            <div class="scanning-checklist">
+              
+              <div class="checklist-item" id="chk-item-1">
+                <div class="chk-status-icon chk-done">&check;</div>
+                <div class="chk-text-group">
+                  <span class="chk-title">Reading file information...</span>
+                  <span class="chk-state state-completed">Completed</span>
+                </div>
+              </div>
+
+              <div class="checklist-item" id="chk-item-2">
+                <div class="chk-status-icon chk-pending">&bull;</div>
+                <div class="chk-text-group">
+                  <span class="chk-title">Checking file types...</span>
+                  <span class="chk-state state-pending">Scanning...</span>
+                </div>
+              </div>
+
+              <div class="checklist-item" id="chk-item-3">
+                <div class="chk-status-icon chk-pending">&bull;</div>
+                <div class="chk-text-group">
+                  <span class="chk-title">Detecting duplicates...</span>
+                  <span class="chk-state state-pending">Pending</span>
+                </div>
+              </div>
+
+              <div class="checklist-item" id="chk-item-4">
+                <div class="chk-status-icon chk-pending">&bull;</div>
+                <div class="chk-text-group">
+                  <span class="chk-title">Preparing for AI analysis...</span>
+                  <span class="chk-state state-pending">Pending</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Illustration: Folder + Magnifying Glass -->
+            <div class="scanning-illustration">
+              <div class="illustration-art">
+                <div class="art-folder">
+                  <div class="folder-tab"></div>
+                  <div class="folder-paper paper-1"></div>
+                  <div class="folder-paper paper-2"></div>
+                  <div class="folder-front"></div>
+                </div>
+                <div class="art-glass">
+                  <div class="glass-rim">
+                    <div class="glass-lens"></div>
+                  </div>
+                  <div class="glass-handle"></div>
+                </div>
+                <div class="art-leaf leaf-left"></div>
+                <div class="art-leaf leaf-right"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 3: CLUTTER AUDIT (Matching 04_clutter_audit.png) -->
+        <div id="view-audit" class="workspace-view" hidden>
+          <div class="view-header-with-action">
+            <div>
+              <h2 class="view-title">Your File Clutter Report</h2>
+              <p class="view-subtitle">Here&rsquo;s what we found in your selection.</p>
+            </div>
+            <div class="header-action-group">
+              <button type="button" id="btn-skip-ai-organize" class="btn btn-outline btn-md">
+                Organize by Rule
+              </button>
+              <button type="button" id="btn-start-ai" class="btn btn-primary btn-md">
+                Start AI Analysis &rarr;
+              </button>
+            </div>
+          </div>
+
+          <!-- 5 Metrics Cards -->
+          <div class="audit-metrics-row">
+            <div class="audit-card">
+              <span id="audit-num-total" class="audit-big-num">0</span>
+              <span class="audit-card-label">Total Files</span>
+            </div>
+
+            <div class="audit-card">
+              <div class="audit-icon-grid">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/>
+                  <rect x="14" y="3" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+              </div>
+              <span class="audit-card-label"><strong id="audit-num-types">0</strong> File Types</span>
+            </div>
+
+            <div class="audit-card audit-card-danger">
+              <span id="audit-num-duplicates" class="audit-big-num text-danger">0</span>
+              <span class="audit-card-label">Exact Duplicates</span>
+            </div>
+
+            <div class="audit-card audit-card-warning">
+              <span id="audit-num-unclear" class="audit-big-num text-warning">0</span>
+              <span class="audit-card-label">Unclear Names</span>
+            </div>
+
+            <div class="audit-card">
+              <span id="audit-num-unsupported" class="audit-big-num text-muted">0</span>
+              <span class="audit-card-label">Unsupported</span>
+            </div>
+          </div>
+
+          <!-- 3 Report Panels Grid -->
+          <div class="audit-panels-grid">
+            
+            <!-- Panel 1: File Types Breakdown -->
+            <div class="audit-panel">
+              <h3 class="panel-title">File Types</h3>
+              <div id="file-types-list" class="file-types-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Panel 2: Quick Insights -->
+            <div class="audit-panel">
+              <h3 class="panel-title">Quick Insights</h3>
+              <ul id="quick-insights-list" class="insights-list">
+                <!-- Dynamically populated -->
+              </ul>
+            </div>
+
+            <!-- Panel 3: Duplicate Files -->
+            <div class="audit-panel">
+              <div class="panel-header-inline">
+                <h3 class="panel-title">Duplicate Files</h3>
+                <span id="duplicates-subtitle" class="panel-subtitle-inline">0 sets found</span>
+              </div>
+              <div id="duplicate-sets-list" class="duplicates-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- VIEW 4: AI SUGGESTIONS REVIEW (Matching 05_ai_suggestions_review.png) -->
+        <div id="view-review" class="workspace-view" hidden>
+          <div class="view-header-with-action">
+            <div>
+              <h2 class="view-title">AI Suggestions</h2>
+              <p class="view-subtitle">Review and edit the suggested names and folders.</p>
+            </div>
+            <div class="analysis-progress-wrapper">
+              <span id="analysis-counter-text" class="counter-text">0 of 0 analyzed</span>
+              <div class="mini-progress-track">
+                <div id="analysis-mini-bar" class="mini-progress-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="table-container">
+            <table class="suggestions-table" aria-label="AI File Organization Suggestions">
+              <thead>
+                <tr>
+                  <th style="width: 44px;">
+                    <input type="checkbox" id="th-select-all" title="Select all rows" aria-label="Select all rows">
+                  </th>
+                  <th>Original File</th>
+                  <th>Suggested Name</th>
+                  <th>Category / Folder</th>
+                  <th>Reason</th>
+                  <th>Confidence</th>
+                  <th style="width: 110px; text-align: center;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="suggestions-table-body">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div class="table-action-bar">
+            <div class="action-bar-left">
+              <button type="button" id="btn-select-all-bottom" class="btn btn-outline btn-sm">
+                &check; Select All
+              </button>
+            </div>
+
+            <div class="action-bar-right">
+              <button type="button" id="btn-skip-selected" class="btn btn-outline btn-md">
+                Skip Selected
+              </button>
+              <button type="button" id="btn-approve-selected" class="btn btn-primary btn-md">
+                Approve Selected
+              </button>
+              <button type="button" id="btn-proceed-export" class="btn btn-primary btn-md">
+                Preview Organized Structure &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 5: EXPORT PREVIEW (Matching 06_export_preview.png) -->
+        <div id="view-export" class="workspace-view" hidden>
+          <div class="view-header">
+            <h2 class="view-title">Preview Your Organized Structure</h2>
+            <p class="view-subtitle">Everything looks good? Download your organized files.</p>
+          </div>
+
+          <div class="export-preview-grid">
+            
+            <!-- Left: Tree View of Approved Files -->
+            <div class="tree-preview-card">
+              <div class="tree-preview-header">
+                <span class="status-check-badge">&check;</span>
+                <span id="export-count-label" class="export-count-label">0 files selected for export</span>
+              </div>
+              <div id="export-tree-container" class="export-tree-view">
+                <!-- Dynamically populated tree -->
+              </div>
+            </div>
+
+            <!-- Right: Export Action + Guarantees -->
+            <div class="export-actions-column">
+              
+              <!-- Export as ZIP Card -->
+              <div class="export-zip-card">
+                <div class="zip-card-header">
+                  <div>
+                    <h3 class="zip-card-title">Export as ZIP</h3>
+                    <p class="zip-card-desc">Download an organized folder structure with your approved files and new names.</p>
+                  </div>
+                  <div class="zip-badge-icon" aria-hidden="true">
+                    📦
+                  </div>
+                </div>
+
+                <button type="button" id="btn-download-zip" class="btn btn-primary btn-lg btn-full">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Download Organized Files (.ZIP)
+                </button>
+
+                <p class="zip-reassurance">Original files remain untouched on your computer.</p>
+              </div>
+
+              <!-- Reassurance Card -->
+              <div class="export-info-card">
+                <h4 class="info-card-title">
+                  <span class="info-icon">📋</span>
+                  What happens after export?
+                </h4>
+                <ul class="info-checklist">
+                  <li>
+                    <span class="check-circle">&check;</span>
+                    <span>Files are processed locally</span>
+                  </li>
+                  <li>
+                    <span class="check-circle">&check;</span>
+                    <span>No files are stored on our servers</span>
+                  </li>
+                  <li>
+                    <span class="check-circle">&check;</span>
+                    <span>Temporary files are automatically deleted</span>
+                  </li>
+                  <li>
+                    <span class="check-circle">&check;</span>
+                    <span>Your originals remain unchanged</span>
+                  </li>
+                </ul>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Workspace Footer -->
+  <footer class="app-footer workspace-footer">
+    <div class="footer-container">
+      <div class="footer-brand-column">
+        <div class="brand footer-brand">
+          <span class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+              <path d="M12 16v-5"/>
+            </svg>
+          </span>
+          <span class="brand-text">ClutterPilot Workspace</span>
+        </div>
+        <p class="footer-tagline">&ldquo;Understand your digital clutter, preview a smarter structure, and organize your files without risking the originals.&rdquo;</p>
+        <div class="footer-privacy-pill">
+          <span class="status-dot online"></span>
+          <span>100% Local Loopback &bull; 127.0.0.1:3000</span>
+        </div>
+      </div>
+
+      <div class="footer-links-group">
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <a href="/">Landing Page</a>
+          <a href="/#features">Features</a>
+          <a href="/#faq">FAQs</a>
+        </div>
+        <div class="footer-col">
+          <h4>Privacy</h4>
+          <a href="/#privacy">Privacy Principles</a>
+          <button type="button" class="link-btn" id="footer-clear-btn">Reset Workspace</button>
+        </div>
+        <div class="footer-col">
+          <h4>System</h4>
+          <span class="footer-meta">Model: qwen2.5:1.5b</span>
+          <span class="footer-meta">Environment: Localhost</span>
+          <span class="footer-meta">&copy; 2026 ClutterPilot</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- EDIT SUGGESTION MODAL -->
+  <dialog id="edit-modal" class="custom-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Suggestion</h3>
+        <button type="button" id="btn-close-edit-modal" class="modal-close-btn" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="edit-orig-name">Original Filename</label>
+          <input type="text" id="edit-orig-name" class="form-input" readonly>
+        </div>
+        <div class="form-group">
+          <label for="edit-sugg-name">Suggested Filename</label>
+          <input type="text" id="edit-sugg-name" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="edit-category">Category / Folder</label>
+          <input type="text" id="edit-category" class="form-input" placeholder="e.g. Documents / Assignments">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-cancel-edit" class="btn btn-outline btn-sm">Cancel</button>
+        <button type="button" id="btn-save-edit" class="btn btn-primary btn-sm">Save Changes</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- CONFIRM RESET WORKSPACE MODAL -->
+  <dialog id="clear-confirm-modal" class="custom-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Reset Workspace?</h3>
+        <button type="button" id="btn-close-clear-modal" class="modal-close-btn" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="privacy-notice-box">
+          <span class="notice-icon">🛡️</span>
+          <p><strong>Your files are never saved on our website.</strong></p>
+        </div>
+        <p class="mt-2">All files and actions you perform are kept strictly in your computer's temporary browser memory.</p>
+        <p class="text-muted mt-2">Resetting will simply wipe this temporary session so you can start fresh with a new set of files. Your original files on your computer are completely untouched.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-cancel-clear" class="btn btn-outline btn-sm">Cancel</button>
+        <button type="button" id="btn-confirm-clear" class="btn btn-primary btn-sm">Yes, Reset Workspace</button>
+      </div>
+    </div>
+  </dialog>
+
+</body>
+</html>
