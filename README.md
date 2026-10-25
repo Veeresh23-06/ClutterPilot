@@ -1,119 +1,127 @@
 # ClutterPilot
 
-> **"Your files are a mess. Fixing them shouldn't be another task."**  
-> *Understand your digital clutter, preview a smarter structure, and organize your files without risking the originals.*
+**Your files are a mess. Fixing them shouldn't be another task.**
 
----
+ClutterPilot is a privacy-focused digital clutter organizer designed to help people review disorganized files, understand their contents, and get AI-assisted suggestions for more meaningful filenames and categories.
 
-ClutterPilot is a **privacy-first, local-AI file organization web application**. It runs entirely on your own machine, leveraging local browser APIs and an on-device Large Language Model ([Ollama](https://ollama.ai) with `qwen2.5:1.5b`) to inspect file clutter, suggest clean naming and categorization schemes, detect exact duplicates, and export a neatly organized ZIP archive—leaving your original files 100% untouched.
+It uses a local AI model through Ollama, making local inference a core part of the project rather than relying on a hosted AI service.
 
----
+## Why ClutterPilot?
 
-## Key Features
+Downloads, documents, notes, and other files can quickly become difficult to manage. Manually opening and renaming every file takes time and effort.
 
-- **100% Local-Only Architecture**: Zero cloud servers, zero analytics, zero telemetry, and zero remote CDNs. The Express backend is strictly bound to `127.0.0.1`.
-- **Private Browser Processing**: File reading, metadata extraction, SHA-256 duplicate hashing, and ZIP compilation execute directly in your browser. Raw file bytes never leave your browser window.
-- **On-Device AI Inference**: Uses a local Ollama instance (`qwen2.5:1.5b`) at `127.0.0.1:11434`. Only bounded text snippets (~250 chars) and file metadata are sent locally for inference.
-- **Smart Rule Fallbacks**: Deterministic heuristic rules provide instant suggestions (<10ms) so you can organize files immediately even if Ollama is loading or unavailable.
-- **Interactive Review Table**: Full control over every AI recommendation. Approve, edit suggested names, modify target folder categories, or skip files individually and in bulk.
-- **Duplicate Detection**: Identifies exact file duplicates client-side via Web Crypto SHA-256 and flags them for review to save disk space.
-- **Zero Risk to Originals**: Generates a downloadable organized ZIP archive in-browser. Your original disk files are never modified, moved, or deleted automatically.
-- **Ephemeral Session Memory**: No user files or text are stored in `localStorage`, `IndexedDB`, or cookies. The **Reset Workspace** feature instantly purges all session objects and revokes URLs.
-- **Light & Dark Theme**: High-contrast, accessible design system tailored for readability in both light and dark modes.
-- **Built-in Interactive Demo**: Test all features instantly with 10 realistic cluttered sample files without selecting personal documents.
+ClutterPilot aims to make this process easier by combining a file audit with local AI suggestions and a human-reviewed organization workflow.
 
----
+## Features
 
-## Architecture & Data Flow
+- **File clutter audit:** Review selected files and their available metadata.
+- **Local AI assistance:** Use an open-weight model through Ollama to help interpret supported file content and suggest useful filenames or categories.
+- **Human-controlled review:** Review suggestions and edit, approve, or skip them before exporting.
+- **Organized export:** Export the approved results as a ZIP package, where supported by the current implementation.
+- **Privacy-conscious design:** Designed to use a locally running AI model rather than a hosted AI API.
+- **Simple web interface:** Interact with the workflow through a browser-based interface.
 
-```mermaid
-flowchart TD
-    A[User Selects Files / Folder] -->|Browser File API| B[Local Browser Sandbox]
-    B -->|Web Crypto API| C[Client-Side SHA-256 Duplicate Check]
-    B -->|JSZip & PDF.js in Browser| D[Local Text Extraction]
-    D -->|Bounded Snippet & Metadata Only| E[Local Express Backend: 127.0.0.1:3000]
-    E -->|Loopback Request| F[Local Ollama: 127.0.0.1:11434]
-    F -->|Suggested Names & Categories| E
-    E -->|Structured JSON| B
-    B -->|User Review & Approval| G[Interactive Suggestion Table]
-    G -->|JSZip in Browser| H[Organized ZIP Archive Download]
-    H -->|Original Files| I[Original Files Untouched on Disk]
+*Feature availability depends on the current implementation. Please verify each feature in the running application before treating it as complete.*
+
+## Technology Stack
+
+- HTML
+- CSS
+- JavaScript
+- Node.js
+- Express.js
+- Ollama
+- Qwen 2.5 1.5B
+
+## How It Works
+
+1. Open ClutterPilot locally in your browser.
+2. Select the files you want to review.
+3. Run the file audit.
+4. Request AI-assisted suggestions for supported files.
+5. Review and edit the suggested names or categories.
+6. Approve the changes you want to keep.
+7. Export the reviewed organization results, where supported.
+
+ClutterPilot is intended to keep the user in control. Suggestions should be reviewed before they are used.
+
+## Requirements
+
+Before running the application, install:
+
+- [Node.js](https://nodejs.org/)
+- [Ollama](https://ollama.com/)
+
+The Qwen model used by this project is `qwen2.5:1.5b`.
+
+## Installation and Setup
+
+### 1. Clone the repository
+
+Replace `YOUR-GITHUB-USERNAME` with your GitHub username.
+
+```bash
+git clone https://github.com/YOUR-GITHUB-USERNAME/ClutterPilot.git
+cd ClutterPilot
 ```
 
----
+### 2. Install dependencies
 
-## Prerequisites
-
-1. **Node.js** (v18.0.0 or later recommended)
-2. **Ollama** installed and running on your machine:
-   - Download Ollama from [ollama.ai](https://ollama.ai)
-   - Pull the recommended lightweight model:
-     ```bash
-     ollama pull qwen2.5:1.5b
-     ```
-   - Ensure the Ollama daemon is active (default address: `http://127.0.0.1:11434`).
-
----
-
-## Quick Start
-
-1. **Clone the repository:**
-   ```bash
-   git clone <your-repo-url>
-   cd Clutterfit
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Start the application:**
-   ```bash
-   npm start
-   ```
-
-4. **Open in your browser:**
-   - Landing page: [http://127.0.0.1:3000](http://127.0.0.1:3000)
-   - Workspace app: [http://127.0.0.1:3000/workspace](http://127.0.0.1:3000/workspace)
-   - Instant Demo: [http://127.0.0.1:3000/workspace?demo=true](http://127.0.0.1:3000/workspace?demo=true)
-
----
-
-## Project Structure
-
-```text
-├── docs/
-│   ├── DEMO_SCRIPT.md          # 3-minute video / live demonstration script
-│   └── SUBMISSION.md           # Architecture, privacy verification, and project narrative
-├── public/
-│   ├── vendor/
-│   │   ├── jszip.min.js        # Local vendor bundle for client-side ZIP & DOCX parsing
-│   │   ├── pdf.min.mjs         # Local vendor bundle for client-side PDF text extraction
-│   │   └── pdf.worker.min.mjs  # Local web worker for PDF extraction
-│   ├── app.js                  # Workspace client logic (Web Crypto, AI calls, table, export)
-│   ├── index.html              # Standalone marketing & privacy landing page
-│   ├── landing.js              # Landing page UI logic (health heartbeat, FAQ, theme)
-│   ├── style.css               # Warm cream / deep forest green responsive design system
-│   └── workspace.html          # Dedicated 5-step workspace application
-├── .gitignore                  # Git ignore rules (node_modules, logs, OS files, secrets)
-├── package.json                # Project dependencies and npm scripts
-├── package-lock.json           # Locked dependency tree
-├── README.md                   # This documentation file
-└── server.js                   # Express server bound to loopback 127.0.0.1:3000
+```bash
+npm install
 ```
 
----
+### 3. Download the local AI model
 
-## Privacy & Security Verification
+```bash
+ollama pull qwen2.5:1.5b
+```
 
-- **Strict Loopback Binding**: `server.js` explicitly binds to `127.0.0.1` (never `0.0.0.0`), preventing unintended local-network exposure.
-- **Zero External Network Calls**: All vendor libraries ([JSZip](https://stuk.github.io/jszip/), [PDF.js](https://mozilla.github.io/pdf.js/)) are self-hosted in `public/vendor/`. No CDNs, tracking scripts, or remote web fonts are loaded.
-- **Zero Persistent Storage**: User files, extracted document text, and generated recommendations are kept strictly in transient JavaScript memory during the active session. Only the user's theme preference (`clutterpilot-theme`) is stored in `localStorage`.
-- **Safe ZIP Generation**: Organized files are bundled into a new `.zip` archive client-side. The user's original files remain completely untouched on their disk.
+Make sure Ollama is running and the model is available before using AI-assisted features.
 
----
+### 4. Start the application
+
+From the project root, run:
+
+```bash
+node server.js
+```
+
+If your `package.json` defines a start script, you can use `npm start` instead.
+
+### 5. Open the application
+
+If the server is configured to use port 3000, open:
+
+[http://127.0.0.1:3000](http://127.0.0.1:3000)
+
+If your application uses a different port, use the address printed in the terminal.
+
+## Privacy and File Safety
+
+ClutterPilot is designed around local AI processing, with Ollama running on the user's machine.
+
+Before using sensitive files, review the application's code and network behavior to verify exactly what file data is processed and where it is sent. Do not assume that all data remains local merely because a local model is used.
+
+Always review the suggested changes before exporting. Keep backups of important files and verify that the application does not modify originals unexpectedly.
+
+## Project Status
+
+ClutterPilot is an evolving project. Features, supported file types, reliability, and setup instructions may change as development continues.
+
+Bug reports and constructive feedback are welcome.
+
+## Contributing
+
+Contributions that improve usability, accessibility, reliability, documentation, and local AI integration are welcome.
+
+1. Fork the repository.
+2. Create a branch for your changes.
+3. Make and test your changes.
+4. Submit a pull request describing what you changed.
+
+Please do not commit credentials, private files, or personal data.
 
 ## License
 
-ISC License.
+This project is licensed under the MIT License. See the [`LICENSE`](LICENSE) file for details.
