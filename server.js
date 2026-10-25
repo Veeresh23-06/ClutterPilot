@@ -2,8 +2,8 @@ const express = require("express");
 const path = require("path");
 
 const app = express();
-const PORT = 3000;
-const HOST = "127.0.0.1"; // Strictly bound to local loopback
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0"; // Strictly bound to local loopback
 const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
 const MODEL = "qwen2.5:1.5b";
 
@@ -367,6 +367,5 @@ app.post("/api/batch-suggest", async (req, res) => {
 
 // Start Express server strictly bound to 127.0.0.1
 app.listen(PORT, HOST, () => {
-  console.log(`ClutterPilot server active at http://${HOST}:${PORT}`);
-  console.log(`Privacy guarantee: Bound to local loopback (${HOST}). No external connections.`);
+  console.log(`ClutterPilot server active on ${HOST}:${PORT}`);
 });
