@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ClutterPilot Workspace — 100% local, privacy-first file organization on your device.">
+  <meta name="description" content="ClutterPilot Workspace â€” 100% local, privacy-first file organization on your device.">
   <meta name="theme-color" content="#FAF8F5">
-  <title>ClutterPilot Workspace — Organize Your Files</title>
+  <title>ClutterPilot Workspace â€” Organize Your Files</title>
 
   <!-- Local stylesheets and client libraries (Zero external CDN links) -->
   <link rel="stylesheet" href="/style.css">
@@ -76,7 +76,7 @@
           <div class="workspace-actions">
             <!-- Privacy Assurance Badge -->
             <div class="workspace-privacy-badge" title="Zero remote storage: Your files and actions are processed strictly in browser memory on this device.">
-              <span class="privacy-badge-icon">🛡️</span>
+              <span class="privacy-badge-icon">ðŸ›¡ï¸</span>
               <span class="privacy-badge-text">In-Memory Only &bull; Nothing saved to our website</span>
             </div>
 
@@ -389,13 +389,88 @@
         <div id="view-review" class="workspace-view" hidden>
           <div class="view-header-with-action">
             <div>
-              <h2 class="view-title">AI Suggestions</h2>
-              <p class="view-subtitle">Review and edit the suggested names and folders.</p>
+              <div class="view-title-tag">
+                <h2 class="view-title">AI Suggestions Studio</h2>
+                <span class="ai-badge-local" id="ai-active-status-badge">✨ Local AI Ready</span>
+              </div>
+              <p class="view-subtitle">Review, fine-tune, and customize intelligent naming and categorization.</p>
             </div>
             <div class="analysis-progress-wrapper">
               <span id="analysis-counter-text" class="counter-text">0 of 0 analyzed</span>
               <div class="mini-progress-track">
                 <div id="analysis-mini-bar" class="mini-progress-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Intelligence & Summary Card -->
+          <div class="ai-intelligence-card" id="ai-intelligence-card">
+            <div class="ai-intel-header">
+              <div class="ai-intel-title-group">
+                <span class="ai-sparkle-icon">✨</span>
+                <h3 class="ai-intel-title">AI Content Intelligence &amp; Batch Insights</h3>
+              </div>
+              <div class="ai-quick-actions">
+                <button type="button" id="btn-ai-auto-cull-dups" class="btn btn-outline btn-xs" title="Automatically keep best file and skip redundant duplicates">
+                  🪄 Auto-Cull Duplicates
+                </button>
+                <button type="button" id="btn-ai-naming-convention" class="btn btn-outline btn-xs" title="Cycle through Title Case, kebab-case, snake_case">
+                  🔤 Style: <span id="current-naming-style">Title Case</span>
+                </button>
+                <button type="button" id="btn-ai-add-date" class="btn btn-outline btn-xs" title="Prefix names with detected year or date">
+                  📅 Date Prefix
+                </button>
+              </div>
+            </div>
+            <div class="ai-intel-body">
+              <p id="ai-executive-summary" class="ai-summary-text">
+                Analyzing documents and extracting intelligent metadata...
+              </p>
+              <div class="ai-tags-container">
+                <span class="ai-tags-label">Filter by Topic:</span>
+                <div id="ai-topics-cloud" class="ai-topics-cloud">
+                  <!-- Dynamically populated clickable tags -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Organization Strategy Selector & Prompt Bar -->
+          <div class="ai-controls-panel">
+            <div class="ai-strategy-selector-wrapper">
+              <span class="strategy-label">AI Strategy Lens:</span>
+              <div class="ai-strategy-tabs" role="tablist" aria-label="AI Organization Strategy">
+                <button type="button" class="strategy-pill active" data-strategy="topic" id="strat-topic">
+                  🎯 Topic &amp; Context
+                </button>
+                <button type="button" class="strategy-pill" data-strategy="timeline" id="strat-timeline">
+                  📅 Timeline &amp; Year
+                </button>
+                <button type="button" class="strategy-pill" data-strategy="format" id="strat-format">
+                  📂 File Format
+                </button>
+                <button type="button" class="strategy-pill" data-strategy="action" id="strat-action">
+                  ⚡ Action &amp; Urgency
+                </button>
+              </div>
+            </div>
+
+            <!-- Natural Language "Instruct AI" Bar -->
+            <div class="ai-instruction-bar">
+              <div class="ai-input-wrapper">
+                <span class="ai-input-icon">💬</span>
+                <input type="text" id="ai-prompt-input" class="ai-prompt-input" placeholder="Instruct AI (e.g., 'Prefix files with CS302_', 'Sort into Work vs Personal', 'Use kebab-case')...">
+                <button type="button" id="btn-apply-ai-instruction" class="btn btn-primary btn-sm">
+                  Apply Instruction
+                </button>
+              </div>
+              <div class="ai-prompt-chips">
+                <span class="chips-label">Quick Instructions:</span>
+                <button type="button" class="prompt-chip" data-prompt="kebab-case">kebab-case</button>
+                <button type="button" class="prompt-chip" data-prompt="prefix-date">Prefix YYYY-MM</button>
+                <button type="button" class="prompt-chip" data-prompt="cull-dups">Skip Duplicates</button>
+                <button type="button" class="prompt-chip" data-prompt="work-personal">Group Work &amp; Personal</button>
+                <button type="button" class="prompt-chip" data-prompt="prefix-course">Prefix CS302_</button>
               </div>
             </div>
           </div>
@@ -409,11 +484,11 @@
                     <input type="checkbox" id="th-select-all" title="Select all rows" aria-label="Select all rows">
                   </th>
                   <th>Original File</th>
-                  <th>Suggested Name</th>
-                  <th>Category / Folder</th>
-                  <th>Reason</th>
+                  <th>Suggested Name &amp; AI Tags</th>
+                  <th>Category / Destination Folder</th>
+                  <th>Reason &amp; Content Insights</th>
                   <th>Confidence</th>
-                  <th style="width: 110px; text-align: center;">Action</th>
+                  <th style="width: 130px; text-align: center;">Action</th>
                 </tr>
               </thead>
               <tbody id="suggestions-table-body">
@@ -475,7 +550,7 @@
                     <p class="zip-card-desc">Download an organized folder structure with your approved files and new names.</p>
                   </div>
                   <div class="zip-badge-icon" aria-hidden="true">
-                    📦
+                    ðŸ“¦
                   </div>
                 </div>
 
@@ -494,7 +569,7 @@
               <!-- Reassurance Card -->
               <div class="export-info-card">
                 <h4 class="info-card-title">
-                  <span class="info-icon">📋</span>
+                  <span class="info-icon">ðŸ“‹</span>
                   What happens after export?
                 </h4>
                 <ul class="info-checklist">
@@ -542,7 +617,7 @@
         <p class="footer-tagline">&ldquo;Understand your digital clutter, preview a smarter structure, and organize your files without risking the originals.&rdquo;</p>
         <div class="footer-privacy-pill">
           <span class="status-dot online"></span>
-          <span> Cloud Hosted · File Organization Available</span>
+          <span> Cloud Hosted Â· File Organization Available</span>
         </div>
       </div>
 
@@ -605,7 +680,7 @@
       </div>
       <div class="modal-body">
         <div class="privacy-notice-box">
-          <span class="notice-icon">🛡️</span>
+          <span class="notice-icon">ðŸ›¡ï¸</span>
           <p><strong>Your files are never saved on our website.</strong></p>
         </div>
         <p class="mt-2">All files and actions you perform are kept strictly in your computer's temporary browser memory.</p>
@@ -614,6 +689,72 @@
       <div class="modal-footer">
         <button type="button" id="btn-cancel-clear" class="btn btn-outline btn-sm">Cancel</button>
         <button type="button" id="btn-confirm-clear" class="btn btn-primary btn-sm">Yes, Reset Workspace</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- AI FILE INSPECTOR MODAL -->
+  <dialog id="ai-inspect-modal" class="custom-modal">
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <div class="modal-title-with-badge">
+          <h3 class="modal-title" id="inspect-modal-title">AI Deep File Analysis</h3>
+          <span class="ai-badge-local" id="inspect-ai-badge">✨ Local AI</span>
+        </div>
+        <button type="button" id="btn-close-inspect-modal" class="modal-close-btn" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body inspect-modal-body">
+        <!-- File Identity Box -->
+        <div class="inspect-identity-box">
+          <span class="inspect-file-icon" id="inspect-file-icon">📄</span>
+          <div class="inspect-identity-meta">
+            <div class="inspect-file-orig-name" id="inspect-orig-name">filename.pdf</div>
+            <div class="inspect-file-subtext" id="inspect-file-details">PDF • 14.2 KB • SHA-256 Verified</div>
+          </div>
+        </div>
+
+        <!-- AI Content Synopsis -->
+        <div class="inspect-section">
+          <h4 class="inspect-section-title">✨ AI Content Synopsis</h4>
+          <p class="inspect-synopsis-text" id="inspect-synopsis">Loading synopsis...</p>
+        </div>
+
+        <!-- Detected Topics & Metadata Grid -->
+        <div class="inspect-grid">
+          <div class="inspect-grid-item">
+            <h4 class="inspect-section-title">🏷️ AI Extracted Tags</h4>
+            <div class="inspect-tags-cloud" id="inspect-tags">
+              <!-- Dynamically populated tag chips -->
+            </div>
+          </div>
+          <div class="inspect-grid-item">
+            <h4 class="inspect-section-title">⏰ Action / Deadline Detected</h4>
+            <div class="inspect-action-item" id="inspect-action-item">No urgent deadlines or actions detected</div>
+          </div>
+        </div>
+
+        <!-- Alternative Filename Suggestions -->
+        <div class="inspect-section">
+          <h4 class="inspect-section-title">💡 Alternative AI Filename Suggestions</h4>
+          <p class="text-muted text-xs mb-2">Click any suggestion to immediately apply it as this file&rsquo;s organized name:</p>
+          <div class="inspect-alternatives-list" id="inspect-alternatives">
+            <!-- Dynamically populated alternatives with 1-click Apply -->
+          </div>
+        </div>
+
+        <!-- Extracted Text Snippet Preview -->
+        <div class="inspect-section">
+          <h4 class="inspect-section-title">📄 Local Content Preview (Analyzed Snippet)</h4>
+          <pre class="inspect-snippet-box" id="inspect-snippet">No text content preview available.</pre>
+        </div>
+
+        <div class="privacy-notice-box mt-3">
+          <span class="notice-icon">🛡️</span>
+          <p><strong>100% On-Device Privacy Guaranteed:</strong> Content processed strictly within temporary local RAM. Never uploaded to cloud servers.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-close-inspect" class="btn btn-primary btn-sm">Done</button>
       </div>
     </div>
   </dialog>

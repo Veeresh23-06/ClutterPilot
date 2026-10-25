@@ -1,11 +1,11 @@
 /**
- * ClutterPilot — Client Application
+ * ClutterPilot â€” Client Application
  * Privacy-First, Local-AI File Organization
  * 
  * Strict Guarantees:
  * - 100% in-browser state. Zero writing of file contents to localStorage,
  *   sessionStorage, IndexedDB, cookies, or remote servers.
- * - Cloud Hosted · File Organization Available
+ * - Cloud Hosted Â· File Organization Available
  * - Client-side SHA-256 duplicate detection.
  * - Client-side ZIP generation via JSZip.
  * - Original files on disk are never altered.
@@ -750,13 +750,13 @@
   }
 
   function getFileTypeIcon(catName) {
-    if (typeof catName !== "string") return "📁";
+    if (typeof catName !== "string") return "ðŸ“";
     const lower = catName.toLowerCase();
-    if (lower.includes("pdf")) return "📄";
-    if (lower.includes("jpg") || lower.includes("jpeg") || lower.includes("png") || lower.includes("webp") || lower.includes("image")) return "🖼️";
-    if (lower.includes("txt") || lower.includes("text") || lower.includes("md")) return "📋";
-    if (lower.includes("doc") || lower.includes("word")) return "📝";
-    return "📁";
+    if (lower.includes("pdf")) return "ðŸ“„";
+    if (lower.includes("jpg") || lower.includes("jpeg") || lower.includes("png") || lower.includes("webp") || lower.includes("image")) return "ðŸ–¼ï¸";
+    if (lower.includes("txt") || lower.includes("text") || lower.includes("md")) return "ðŸ“‹";
+    if (lower.includes("doc") || lower.includes("word")) return "ðŸ“";
+    return "ðŸ“";
   }
 
   /* ==========================================================================
@@ -1091,7 +1091,7 @@
       const tdCat = document.createElement("td");
       tdCat.id = `row-cat-${index}`;
       if (sugg) {
-        tdCat.innerHTML = `<span class="category-pill">📁 ${sugg.category}</span>`;
+        tdCat.innerHTML = `<span class="category-pill">ðŸ“ ${sugg.category}</span>`;
       } else {
         tdCat.innerHTML = `<span class="text-muted">&mdash;</span>`;
       }
@@ -1197,7 +1197,7 @@
     const confEl = $(`row-conf-${index}`);
 
     if (suggNameEl) suggNameEl.textContent = f.suggestion.suggestedName;
-    if (catEl) catEl.innerHTML = `<span class="category-pill">📁 ${f.suggestion.category}</span>`;
+    if (catEl) catEl.innerHTML = `<span class="category-pill">ðŸ“ ${f.suggestion.category}</span>`;
     if (reasonEl) reasonEl.textContent = f.suggestion.reason;
     if (confEl) {
       const confClass = f.suggestion.confidence === "High" ? "conf-high" : f.suggestion.confidence === "Medium" ? "conf-medium" : "conf-low";
@@ -1248,7 +1248,7 @@
         const headerDiv = document.createElement("div");
         headerDiv.className = "tree-folder-header";
         headerDiv.innerHTML = `
-          <span>📁</span>
+          <span>ðŸ“</span>
           <span>${key}</span>
         `;
         folderDiv.appendChild(headerDiv);
