@@ -1,127 +1,135 @@
-# ClutterPilot
+# 🧹 ClutterPilot — Let AI Help You Tame Digital Clutter
 
-**Your files are a mess. Fixing them shouldn't be another task.**
+> 🦥 *Slow down the chaos. Organize smarter. Stay in control.*
 
-ClutterPilot is a privacy-focused digital clutter organizer designed to help people review disorganized files, understand their contents, and get AI-assisted suggestions for more meaningful filenames and categories.
+ClutterPilot is a web-based digital clutter organizer designed to make file organization easier with a simple interface and AI-assisted suggestions powered by **Qwen 2.5 1.5B** through **Ollama**.
 
-It uses a local AI model through Ollama, making local inference a core part of the project rather than relying on a hosted AI service.
+🔗 **Live Website:** https://clutterpilot.onrender.com  
 
-## Why ClutterPilot?
+---
 
-Downloads, documents, notes, and other files can quickly become difficult to manage. Manually opening and renaming every file takes time and effort.
+## 🌟 About the Project
 
-ClutterPilot aims to make this process easier by combining a file audit with local AI suggestions and a human-reviewed organization workflow.
+Digital clutter builds up over time. Files become difficult to find, folders get messy, and organizing everything becomes another task on the to-do list.
 
-## Features
+ClutterPilot explores how AI can help simplify this process by combining file organization features with AI-assisted suggestions.
 
-- **File clutter audit:** Review selected files and their available metadata.
-- **Local AI assistance:** Use an open-weight model through Ollama to help interpret supported file content and suggest useful filenames or categories.
-- **Human-controlled review:** Review suggestions and edit, approve, or skip them before exporting.
-- **Organized export:** Export the approved results as a ZIP package, where supported by the current implementation.
-- **Privacy-conscious design:** Designed to use a locally running AI model rather than a hosted AI API.
-- **Simple web interface:** Interact with the workflow through a browser-based interface.
+🎯 **Goal:** Make digital organization easier while keeping users in control of their decisions.
 
-*Feature availability depends on the current implementation. Please verify each feature in the running application before treating it as complete.*
+## ✨ Features
 
-## Technology Stack
+- 🖥️ **Simple Web Interface** — Interact with the organizer through a web-based interface.
+- 📂 **File Organization** — Features designed to help manage digital clutter.
+- 🤖 **AI-Assisted Suggestions** — Uses Qwen 2.5 1.5B through Ollama in the local AI workflow.
+- 🧑‍💻 **Local AI Inference** — Run the AI workflow locally with the required model and runtime installed.
+- 🌱 **Open-Model Experimentation** — Explore how an open-weight AI model can support an everyday task.
 
-- HTML
-- CSS
-- JavaScript
-- Node.js
-- Express.js
-- Ollama
-- Qwen 2.5 1.5B
+## 🛠️ Tech Stack
 
-## How It Works
+| Technology | Purpose |
+|---|---|
+| 🌐 HTML | Web page structure |
+| 🎨 CSS | Styling and layout |
+| ⚡ JavaScript | Frontend interactions |
+| 🟢 Node.js | JavaScript runtime |
+| 🚀 Express.js | Backend server |
+| 🧠 Qwen 2.5 1.5B | AI model |
+| 🦙 Ollama | Local model runtime |
+| ☁️ Render | Hosted web deployment |
 
-1. Open ClutterPilot locally in your browser.
-2. Select the files you want to review.
-3. Run the file audit.
-4. Request AI-assisted suggestions for supported files.
-5. Review and edit the suggested names or categories.
-6. Approve the changes you want to keep.
-7. Export the reviewed organization results, where supported.
+## 🧠 How the AI Works
 
-ClutterPilot is intended to keep the user in control. Suggestions should be reviewed before they are used.
+ClutterPilot's local AI workflow uses **Qwen 2.5 1.5B**, served through Ollama. The local AI suggestions have been verified working.
 
-## Requirements
+⚠️ **Local vs. Hosted AI**
 
-Before running the application, install:
+The public website is hosted on Render, but the hosted backend does not automatically connect to Ollama running on a developer's computer.
+
+- ☁️ **Hosted version:** Provides the deployed web interface and the features available in that environment.
+- 💻 **Local version:** Can run the Qwen-based AI suggestion workflow when Ollama and the required model are configured locally.
+
+The hosted website should not be assumed to provide the same AI functionality as the local setup.
+
+## 🚀 Run Locally
+
+### 1. Prerequisites
+
+Install the following:
 
 - [Node.js](https://nodejs.org/)
 - [Ollama](https://ollama.com/)
 
-The Qwen model used by this project is `qwen2.5:1.5b`.
-
-## Installation and Setup
-
-### 1. Clone the repository
-
-Replace `YOUR-GITHUB-USERNAME` with your GitHub username.
+### 2. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR-GITHUB-USERNAME/ClutterPilot.git
+git clone https://github.com/Veeresh23-06/ClutterPilot.git
 cd ClutterPilot
 ```
 
-### 2. Install dependencies
+### 3. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Download the local AI model
+### 4. Download the AI model
+
+Make sure Ollama is running, then execute:
 
 ```bash
 ollama pull qwen2.5:1.5b
 ```
 
-Make sure Ollama is running and the model is available before using AI-assisted features.
+### 5. Start the application
 
-### 4. Start the application
-
-From the project root, run:
+Use the start command configured in `package.json`. If the project uses `node server.js`, run:
 
 ```bash
 node server.js
 ```
 
-If your `package.json` defines a start script, you can use `npm start` instead.
+Open the local URL shown by the application in your terminal. The default may be `http://localhost:3000`.
 
-### 5. Open the application
+> 💡 If the AI suggestions do not work, check that Ollama is running, the model is installed, and the backend is configured to use the local Ollama endpoint.
 
+## 🌍 Try ClutterPilot
 
+- 🔗 **Live Website:** https://clutterpilot.onrender.com
 
+Use the local setup to try the verified Qwen AI workflow.
 
+## 🌱 Why Open Innovation?
 
+Open-weight models give developers the opportunity to experiment, learn, and build AI-powered applications without relying entirely on closed-model APIs.
 
+ClutterPilot is an exploration of how local AI can assist with a practical everyday problem. It also highlights the importance of understanding deployment limitations and being transparent about what works locally versus what works in a hosted environment.
 
-## Privacy and File Safety
+## 🔮 Future Improvements
 
-ClutterPilot is designed around local AI processing, with Ollama running on the user's machine.
+Potential areas for further development include:
 
-Before using sensitive files, review the application's code and network behavior to verify exactly what file data is processed and where it is sent. Do not assume that all data remains local merely because a local model is used.
+- ☁️ Exploring a supported AI setup for the hosted deployment.
+- 🧭 Improving organization suggestions and the user experience.
+- 🧪 Expanding testing and documenting supported workflows.
+- 📖 Improving setup instructions and troubleshooting guidance.
 
-Always review the suggested changes before exporting. Keep backups of important files and verify that the application does not modify originals unexpectedly.
+## 🤝 Contributing
 
-## Project Status
+Contributions, suggestions, and feedback are welcome!
 
-ClutterPilot is an evolving project. Features, supported file types, reliability, and setup instructions may change as development continues.
+1. 🍴 Fork the repository.
+2. 🌿 Create a branch for your changes.
+3. 🛠️ Make and test your changes.
+4. 📬 Submit a pull request describing your contribution.
 
-Bug reports and constructive feedback are welcome.
+## 📜 License
 
-## Contributing
+Check the repository for its current license before reusing or redistributing the project.
 
-Contributions that improve usability, accessibility, reliability, documentation, and local AI integration are welcome.
+---
 
-1. Fork the repository.
-2. Create a branch for your changes.
-3. Make and test your changes.
-4. Submit a pull request describing what you changed.
+### 🦥 ClutterPilot
 
-Please do not commit credentials, private files, or personal data.
+**Organize smarter. Reduce digital clutter. Keep control.**
 
-## License
-
-This project is licensed under the MIT License. See the [`LICENSE`](LICENSE) file for details.
+Built with 💚 using open-source tools and open-weight AI.
