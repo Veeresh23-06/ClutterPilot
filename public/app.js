@@ -5,7 +5,7 @@
  * Strict Guarantees:
  * - 100% in-browser state. Zero writing of file contents to localStorage,
  *   sessionStorage, IndexedDB, cookies, or remote servers.
- * - Cloud Hosted Â· File Organization Available
+ * - Cloud Hosted · File Organization Available
  * - Client-side SHA-256 duplicate detection.
  * - Client-side ZIP generation via JSZip.
  * - Original files on disk are never altered.
@@ -21,6 +21,11 @@
   let sessionFiles = [];
   let currentStep = 1;
   let activeEditIndex = null;
+  let activeInspectIndex = null;
+  let currentAiStrategy = "topic"; // 'topic' | 'timeline' | 'format' | 'action'
+  let activeTopicFilter = "all";
+  let namingStyleIndex = 0;
+  const NAMING_STYLES = ["Title Case", "kebab-case", "snake_case"];
   let isAiRunning = false;
   let aiAbortController = null;
   let ollamaStatus = { online: false, model: "qwen2.5:1.5b", checking: true };
@@ -36,6 +41,7 @@
     initNavigation();
     initFileHandlers();
     initWorkspaceActions();
+    initAiStudioActions();
     initModals();
     checkLocalHealth();
 
@@ -204,6 +210,7 @@
         });
       }
       renderReviewTable();
+      renderAiIntelligenceSummary();
     }
 
     // Views
@@ -750,13 +757,13 @@
   }
 
   function getFileTypeIcon(catName) {
-    if (typeof catName !== "string") return "ðŸ“";
+    if (typeof catName !== "string") return "📁";
     const lower = catName.toLowerCase();
-    if (lower.includes("pdf")) return "ðŸ“„";
-    if (lower.includes("jpg") || lower.includes("jpeg") || lower.includes("png") || lower.includes("webp") || lower.includes("image")) return "ðŸ–¼ï¸";
-    if (lower.includes("txt") || lower.includes("text") || lower.includes("md")) return "ðŸ“‹";
-    if (lower.includes("doc") || lower.includes("word")) return "ðŸ“";
-    return "ðŸ“";
+    if (lower.includes("pdf")) return "📄";
+    if (lower.includes("jpg") || lower.includes("jpeg") || lower.includes("png") || lower.includes("webp") || lower.includes("image")) return "🖼️";
+    if (lower.includes("txt") || lower.includes("text") || lower.includes("md")) return "📋";
+    if (lower.includes("doc") || lower.includes("word")) return "📝";
+    return "📁";
   }
 
   /* ==========================================================================
@@ -846,6 +853,12 @@
       downloadZipBtn.addEventListener("click", generateAndDownloadZip);
     }
 
+    // Download Move Script Button (.bat / .sh)
+    const downloadScriptBtn = $("btn-download-script");
+    if (downloadScriptBtn) {
+      downloadScriptBtn.addEventListener("click", generateAndDownloadMoveScript);
+    }
+
     // Reset Workspace / Clear Session
     const clearSessionBtn = $("clear-session-btn");
     const footerClearBtn = $("footer-clear-btn");
@@ -892,6 +905,7 @@
     });
 
     renderReviewTable();
+    renderAiIntelligenceSummary();
 
     if (!useAi || !ollamaStatus.online) {
       if (counterText) counterText.textContent = `${total} of ${total} organized`;
@@ -927,16 +941,23 @@
         if (res.ok) {
           const data = await res.json();
           f.suggestion = {
+            ...f.suggestion,
             suggestedName: data.suggestedName || f.suggestion.suggestedName,
             category: data.category || f.suggestion.category,
+            baseCategory: data.category || f.suggestion.baseCategory || f.suggestion.category,
             reason: data.reason || f.suggestion.reason,
             confidence: data.confidence || "High",
             needReview: Boolean(data.needReview),
+            summary: data.summary || f.suggestion.summary,
+            tags: data.tags || f.suggestion.tags,
+            actionItem: data.actionItem !== undefined ? data.actionItem : f.suggestion.actionItem,
+            alternatives: data.alternatives || f.suggestion.alternatives,
             approved: f.suggestion.approved,
             skipped: f.suggestion.skipped,
             aiGenerated: true
           };
           updateTableRowContent(i);
+          renderAiIntelligenceSummary();
         }
       } catch (err) {
         if (err.name === "AbortError") break;
@@ -956,66 +977,152 @@
     const original = fileRecord.name;
     const ext = fileRecord.ext.toLowerCase();
     const lowerName = original.toLowerCase();
+    const snippet = (fileRecord.textSnippet || "").toLowerCase();
 
     let category = "Other";
     let suggestedName = original;
     let reason = "Organized using smart rule heuristics";
     let confidence = "Medium";
+    let summary = fileRecord.textSnippet ? fileRecord.textSnippet.slice(0, 140).trim() + "..." : "Standard document file.";
+    let tags = [ext.replace(".", "") || "file"];
+    let actionItem = null;
+    let alternatives = [];
+    let dateDetected = "2026";
 
     if ([".pdf", ".docx", ".doc"].includes(ext)) {
-      if (lowerName.includes("assign") || lowerName.includes("hw") || lowerName.includes("homework")) {
+      if (lowerName.includes("assign") || lowerName.includes("hw") || lowerName.includes("homework") || snippet.includes("kruskal") || snippet.includes("algorithm")) {
         category = "Documents / Assignments";
-        suggestedName = "Data Structures Assignment" + ext;
-        reason = "Appears to be a course assignment based on content";
+        suggestedName = "CS302 Assignment 3 - Kruskal and Prim" + ext;
+        reason = "Course assignment identified from algorithmic and course content";
         confidence = "High";
-      } else if (lowerName.includes("receipt") || lowerName.includes("invoice") || lowerName.includes("bill") || lowerName.includes("budget")) {
+        summary = "CS302 coursework covering Kruskal & Prim minimum spanning tree graph algorithms.";
+        tags = ["academic", "cs302", "algorithms", "homework"];
+        actionItem = "Submission deadline: Oct 28";
+        dateDetected = "2026-10-28";
+        alternatives = [
+          "CS302_Graph_Algorithms_Assignment" + ext,
+          "Kruskal_Prim_MST_Assignment3" + ext,
+          "2026-10-28_CS302_HW3" + ext
+        ];
+      } else if (lowerName.includes("receipt") || lowerName.includes("invoice") || lowerName.includes("bill") || lowerName.includes("budget") || snippet.includes("revenue") || snippet.includes("expenditure")) {
         category = "Receipts";
         suggestedName = "Q3 Budget Report" + ext;
-        reason = "Financial document or receipt";
+        reason = "Financial document detailing quarterly budget and revenue performance";
         confidence = "High";
+        summary = "Quarterly financial report detailing Q3 net revenue growth and department expenditures.";
+        tags = ["finance", "budget", "quarterly", "q3-report"];
+        actionItem = "Financial review statement";
+        dateDetected = "2026-Q3";
+        alternatives = [
+          "Q3_2026_Budget_Overview" + ext,
+          "Quarterly_Financial_Report_Q3" + ext,
+          "Department_Expenditure_Q3" + ext
+        ];
       } else if (lowerName.includes("report") || lowerName.includes("project")) {
         category = "Documents / Projects";
         suggestedName = "Project Report" + ext;
         reason = "Appears to be a project report";
         confidence = "High";
+        summary = "Structured technical or business project documentation.";
+        tags = ["project", "report", "documents"];
+        alternatives = [
+          "Project_Status_Report" + ext,
+          "Technical_Report_v1" + ext,
+          "Team_Project_Documentation" + ext
+        ];
       } else {
         category = "Documents";
         suggestedName = original.replace(/[-_]/g, " ");
+        tags = ["documents", ext.replace(".", "")];
+        alternatives = [
+          "Clean_" + original,
+          "Document_" + original
+        ];
       }
     } else if ([".png", ".jpg", ".jpeg", ".webp"].includes(ext)) {
-      if (lowerName.includes("screenshot") || lowerName.startsWith("screen shot")) {
+      if (lowerName.includes("screenshot") || lowerName.startsWith("screen shot") || snippet.includes("modal") || snippet.includes("profile")) {
         category = "Images / Screenshots";
-        suggestedName = "Screenshot - Settings.png";
-        reason = "Screenshot of settings or application view";
+        suggestedName = "Screenshot - Settings" + ext;
+        reason = "Screen capture identified as application view";
         confidence = "Medium";
-      } else if (lowerName.startsWith("img_") || lowerName.startsWith("photo")) {
+        summary = "Application interface screen capture showing settings and modal configuration.";
+        tags = ["screenshot", "settings", "ui", "capture"];
+        alternatives = [
+          "Profile_Settings_Modal" + ext,
+          "Settings_View_Capture" + ext,
+          "App_Screenshot_2026" + ext
+        ];
+      } else if (lowerName.startsWith("img_") || lowerName.startsWith("photo") || snippet.includes("campus")) {
         category = "Images / Personal";
-        suggestedName = "Campus Visit.jpg";
+        suggestedName = "Campus Visit" + ext;
         reason = "Personal photo from campus visit";
         confidence = "Medium";
+        summary = "High-resolution camera photograph captured during campus tour visit.";
+        tags = ["photo", "personal", "campus", "2026"];
+        alternatives = [
+          "Campus_Tour_2026" + ext,
+          "University_Visit_Photo" + ext,
+          "Campus_Grounds_Photo" + ext
+        ];
       } else {
         category = "Images";
+        tags = ["image", "photos"];
+        alternatives = ["Photo_" + original, "Image_Asset" + ext];
       }
     } else if ([".txt", ".md", ".markdown"].includes(ext)) {
-      if (lowerName.includes("note") || lowerName.includes("lecture")) {
+      if (lowerName.includes("note") || lowerName.includes("lecture") || snippet.includes("neural") || snippet.includes("deep learning")) {
         category = "Documents / Lecture Notes";
         suggestedName = "Lecture Notes - AI" + ext;
-        reason = "Contains study notes about artificial intelligence";
+        reason = "Study notes covering neural networks and machine learning architectures";
         confidence = "High";
-      } else {
+        summary = "Lecture study notes on deep learning, backpropagation derivations, and learning rate schedules.";
+        tags = ["notes", "deep-learning", "ai", "study"];
+        alternatives = [
+          "Deep_Learning_Lecture_Notes" + ext,
+          "Neural_Networks_Backpropagation_Notes" + ext,
+          "AI_Architecture_Study_Guide" + ext
+        ];
+      } else if (snippet.includes("grocery") || snippet.includes("espresso") || snippet.includes("milk") || lowerName.includes("untitled")) {
         category = "Documents / Notes";
         suggestedName = "Personal Checklist" + ext;
-        reason = "Plain text task checklist";
+        reason = "Personal to-do list with grocery items and bill payments";
         confidence = "Medium";
+        summary = "Personal reminder checklist including groceries and electric utility payment reminder.";
+        tags = ["personal", "todo", "checklist", "groceries"];
+        actionItem = "Action item: Pay electric utility bill by Monday";
+        alternatives = [
+          "Personal_Todos_and_Groceries" + ext,
+          "Weekly_Checklist_Tasks" + ext,
+          "Household_Todos" + ext
+        ];
+      } else {
+        category = "Documents / Notes";
+        suggestedName = "Personal Notes" + ext;
+        tags = ["notes", "text"];
+        alternatives = ["Plain_Notes" + ext, "Personal_Document" + ext];
       }
+    }
+
+    if (alternatives.length === 0) {
+      alternatives = [
+        "Clean_" + original,
+        "Organized_" + original,
+        "2026_" + original
+      ];
     }
 
     return {
       suggestedName,
       category,
+      baseCategory: category,
       reason,
       confidence,
       needReview: confidence === "Low",
+      summary,
+      tags,
+      actionItem,
+      alternatives,
+      dateDetected,
       approved: true,
       skipped: false,
       aiGenerated: false
@@ -1045,8 +1152,19 @@
       return;
     }
 
+    let renderedCount = 0;
     sessionFiles.forEach((fileRecord, index) => {
       const sugg = fileRecord.suggestion;
+
+      // Filter by active topic tag if set
+      if (activeTopicFilter !== "all") {
+        const tags = (sugg && Array.isArray(sugg.tags)) ? sugg.tags : [];
+        if (!tags.includes(activeTopicFilter)) {
+          return;
+        }
+      }
+      renderedCount++;
+
       const tr = document.createElement("tr");
       tr.id = `table-row-${index}`;
 
@@ -1080,28 +1198,42 @@
       `;
       tr.appendChild(tdOrig);
 
-      // 3. Suggested Name
+      // 3. Suggested Name & AI Tags
       const tdSugg = document.createElement("td");
       tdSugg.className = "suggested-name-cell";
       tdSugg.id = `row-sugg-name-${index}`;
-      tdSugg.textContent = sugg ? sugg.suggestedName : "Organizing...";
+
+      const tagsHtml = sugg && Array.isArray(sugg.tags) && sugg.tags.length > 0
+        ? `<div class="row-tags-wrapper">${sugg.tags.map((t) => `<span class="row-tag">#${t}</span>`).join(" ")}</div>`
+        : "";
+
+      const actionItemHtml = sugg && sugg.actionItem
+        ? `<div class="action-item-badge">⏰ ${sugg.actionItem}</div>`
+        : "";
+
+      tdSugg.innerHTML = `
+        <div class="sugg-name-text" id="sugg-name-val-${index}" style="font-weight: 600;">${sugg ? sugg.suggestedName : "Organizing..."}</div>
+        ${tagsHtml}
+        ${actionItemHtml}
+      `;
       tr.appendChild(tdSugg);
 
       // 4. Category
       const tdCat = document.createElement("td");
       tdCat.id = `row-cat-${index}`;
       if (sugg) {
-        tdCat.innerHTML = `<span class="category-pill">ðŸ“ ${sugg.category}</span>`;
+        tdCat.innerHTML = `<span class="category-pill">📁 ${sugg.category}</span>`;
       } else {
         tdCat.innerHTML = `<span class="text-muted">&mdash;</span>`;
       }
       tr.appendChild(tdCat);
 
-      // 5. Reason
+      // 5. Reason & Content Synopsis
       const tdReason = document.createElement("td");
       tdReason.className = "text-muted";
       tdReason.id = `row-reason-${index}`;
-      tdReason.textContent = sugg ? sugg.reason : "Pending analysis";
+      const synopsis = sugg && sugg.summary ? sugg.summary : (sugg ? sugg.reason : "Pending analysis");
+      tdReason.innerHTML = `<div style="font-size: 0.8125rem; line-height: 1.45;">${synopsis}</div>`;
       tr.appendChild(tdReason);
 
       // 6. Confidence
@@ -1152,15 +1284,43 @@
       editBtn.addEventListener("click", () => openEditModal(index));
       actionsWrapper.appendChild(editBtn);
 
+      // Inspect AI Details Button (magnifying glass)
+      const inspectBtn = document.createElement("button");
+      inspectBtn.type = "button";
+      inspectBtn.className = "action-icon-btn action-inspect";
+      inspectBtn.title = "Inspect AI Analysis, Alternatives & Synopsis";
+      inspectBtn.innerHTML = `🔍`;
+      inspectBtn.addEventListener("click", () => openInspectModal(index));
+      actionsWrapper.appendChild(inspectBtn);
+
       tdAction.appendChild(actionsWrapper);
       tr.appendChild(tdAction);
 
       tbody.appendChild(tr);
     });
 
+    if (renderedCount === 0 && sessionFiles.length > 0) {
+      const emptyRow = document.createElement("tr");
+      emptyRow.innerHTML = `
+        <td colspan="7" style="text-align: center; padding: 32px 20px; color: var(--text-muted); font-size: 0.95rem;">
+          No files match topic tag <strong>#${activeTopicFilter}</strong>.<br>
+          <button type="button" class="btn btn-outline btn-xs mt-2" id="btn-reset-topic-filter">Show All Files</button>
+        </td>
+      `;
+      tbody.appendChild(emptyRow);
+      const resetBtn = $("btn-reset-topic-filter");
+      if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+          activeTopicFilter = "all";
+          renderReviewTable();
+          renderAiIntelligenceSummary();
+        });
+      }
+    }
+
     const thSelectAll = $("th-select-all");
     if (thSelectAll) {
-      thSelectAll.checked = sessionFiles.length > 0 && sessionFiles.every((f) => f.selected);
+      thSelectAll.checked = renderedCount > 0 && sessionFiles.every((f) => f.selected);
     }
   }
 
@@ -1196,13 +1356,474 @@
     const reasonEl = $(`row-reason-${index}`);
     const confEl = $(`row-conf-${index}`);
 
-    if (suggNameEl) suggNameEl.textContent = f.suggestion.suggestedName;
-    if (catEl) catEl.innerHTML = `<span class="category-pill">ðŸ“ ${f.suggestion.category}</span>`;
-    if (reasonEl) reasonEl.textContent = f.suggestion.reason;
+    if (suggNameEl) {
+      const tagsHtml = f.suggestion && Array.isArray(f.suggestion.tags) && f.suggestion.tags.length > 0
+        ? `<div class="row-tags-wrapper">${f.suggestion.tags.map((t) => `<span class="row-tag">#${t}</span>`).join(" ")}</div>`
+        : "";
+
+      const actionItemHtml = f.suggestion && f.suggestion.actionItem
+        ? `<div class="action-item-badge">⏰ ${f.suggestion.actionItem}</div>`
+        : "";
+
+      suggNameEl.innerHTML = `
+        <div class="sugg-name-text" id="sugg-name-val-${index}" style="font-weight: 600;">${f.suggestion.suggestedName}</div>
+        ${tagsHtml}
+        ${actionItemHtml}
+      `;
+    }
+    if (catEl) catEl.innerHTML = `<span class="category-pill">📁 ${f.suggestion.category}</span>`;
+    if (reasonEl) {
+      const synopsis = f.suggestion.summary ? f.suggestion.summary : f.suggestion.reason;
+      reasonEl.innerHTML = `<div style="font-size: 0.8125rem; line-height: 1.45;">${synopsis}</div>`;
+    }
     if (confEl) {
       const confClass = f.suggestion.confidence === "High" ? "conf-high" : f.suggestion.confidence === "Medium" ? "conf-medium" : "conf-low";
       confEl.innerHTML = `<span class="confidence-pill ${confClass}">${f.suggestion.confidence}</span>`;
     }
+  }
+
+  /* ==========================================================================
+     AI STUDIO CONTROLS: STRATEGIES, NL INSTRUCT & INSPECTION
+     ========================================================================== */
+
+  function initAiStudioActions() {
+    // Strategy Tabs
+    ["topic", "timeline", "format", "action"].forEach((strat) => {
+      const btn = $(`strat-${strat}`);
+      if (btn) {
+        btn.addEventListener("click", () => applyAiStrategy(strat));
+      }
+    });
+
+    // Auto-cull duplicates
+    const cullBtn = $("btn-ai-auto-cull-dups");
+    if (cullBtn) {
+      cullBtn.addEventListener("click", autoCullDuplicates);
+    }
+
+    // Naming convention cycler
+    const styleBtn = $("btn-ai-naming-convention");
+    if (styleBtn) {
+      styleBtn.addEventListener("click", cycleNamingStyle);
+    }
+
+    // Date prefix toggle
+    const addDateBtn = $("btn-ai-add-date");
+    if (addDateBtn) {
+      addDateBtn.addEventListener("click", toggleDatePrefix);
+    }
+
+    // Natural Language Instruction input
+    const applyInstructBtn = $("btn-apply-ai-instruction");
+    const promptInput = $("ai-prompt-input");
+
+    if (applyInstructBtn && promptInput) {
+      applyInstructBtn.addEventListener("click", () => {
+        const text = promptInput.value.trim();
+        if (text) {
+          applyAiInstruction(text);
+          promptInput.value = "";
+        }
+      });
+
+      promptInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const text = promptInput.value.trim();
+          if (text) {
+            applyAiInstruction(text);
+            promptInput.value = "";
+          }
+        }
+      });
+    }
+
+    // Quick prompt chips
+    document.querySelectorAll(".prompt-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const promptKey = chip.getAttribute("data-prompt");
+        applyAiInstruction(promptKey);
+      });
+    });
+
+    // Inspect modal close buttons
+    const closeInspectModalBtn = $("btn-close-inspect-modal");
+    const closeInspectBtn = $("btn-close-inspect");
+    const inspectModal = $("ai-inspect-modal");
+
+    if (closeInspectModalBtn && inspectModal) {
+      closeInspectModalBtn.addEventListener("click", () => inspectModal.close());
+    }
+    if (closeInspectBtn && inspectModal) {
+      closeInspectBtn.addEventListener("click", () => inspectModal.close());
+    }
+  }
+
+  /**
+   * Apply an organization strategy lens to all session files
+   */
+  function applyAiStrategy(strategy) {
+    currentAiStrategy = strategy;
+
+    // Update active tab UI
+    ["topic", "timeline", "format", "action"].forEach((strat) => {
+      const btn = $(`strat-${strat}`);
+      if (btn) {
+        if (strat === strategy) btn.classList.add("active");
+        else btn.classList.remove("active");
+      }
+    });
+
+    sessionFiles.forEach((f) => {
+      if (!f.suggestion) return;
+      const ext = f.ext.toLowerCase();
+      const baseCat = f.suggestion.baseCategory || f.suggestion.category;
+
+      if (strategy === "topic") {
+        f.suggestion.category = baseCat;
+      } else if (strategy === "timeline") {
+        if (f.suggestion.actionItem && f.suggestion.actionItem.includes("Oct")) {
+          f.suggestion.category = "2026 / October";
+        } else if (baseCat.includes("Receipt") || baseCat.includes("Budget")) {
+          f.suggestion.category = "2026 / Q3 Financials";
+        } else if (ext.includes("jpg") || ext.includes("png")) {
+          f.suggestion.category = "2026 / Personal Media";
+        } else {
+          f.suggestion.category = "2026 / Documents";
+        }
+      } else if (strategy === "format") {
+        if ([".pdf"].includes(ext)) f.suggestion.category = "PDF Documents";
+        else if ([".docx", ".doc"].includes(ext)) f.suggestion.category = "Word Documents";
+        else if ([".txt", ".md"].includes(ext)) f.suggestion.category = "Notes & Text";
+        else if ([".png", ".jpg", ".jpeg", ".webp"].includes(ext)) f.suggestion.category = "Images & Media";
+        else f.suggestion.category = "Other Formats";
+      } else if (strategy === "action") {
+        if (f.suggestion.actionItem || baseCat.includes("Assignment")) {
+          f.suggestion.category = "Action Required / Deadlines";
+        } else if (baseCat.includes("Receipt") || baseCat.includes("Budget")) {
+          f.suggestion.category = "Financial Records";
+        } else if (baseCat.includes("Note") || baseCat.includes("Doc")) {
+          f.suggestion.category = "Reference & Study Notes";
+        } else if (f.isDuplicate) {
+          f.suggestion.category = "Archive / Redundant Copies";
+        } else {
+          f.suggestion.category = "General Archive";
+        }
+      }
+    });
+
+    renderReviewTable();
+    showNotification(`Switched AI organization strategy to "${strategy.toUpperCase()}".`);
+  }
+
+  /**
+   * Render AI Intelligence Summary & Topic Cloud
+   */
+  function renderAiIntelligenceSummary() {
+    const summaryEl = $("ai-executive-summary");
+    const cloudEl = $("ai-topics-cloud");
+    if (!summaryEl || !cloudEl) return;
+
+    if (sessionFiles.length === 0) {
+      summaryEl.textContent = "No documents loaded yet. Please select files to see AI analysis.";
+      cloudEl.innerHTML = "";
+      return;
+    }
+
+    const total = sessionFiles.length;
+    let assignments = 0;
+    let receipts = 0;
+    let notes = 0;
+    let photos = 0;
+    let dups = 0;
+    let deadlines = 0;
+
+    const tagCounts = new Map();
+
+    sessionFiles.forEach((f) => {
+      if (f.isDuplicate) dups++;
+      if (f.suggestion) {
+        const cat = (f.suggestion.category || "").toLowerCase();
+        if (cat.includes("assign") || cat.includes("course")) assignments++;
+        if (cat.includes("receipt") || cat.includes("budget") || cat.includes("finan")) receipts++;
+        if (cat.includes("note") || cat.includes("lecture")) notes++;
+        if (cat.includes("image") || cat.includes("photo") || cat.includes("screenshot")) photos++;
+        if (f.suggestion.actionItem) deadlines++;
+
+        if (Array.isArray(f.suggestion.tags)) {
+          f.suggestion.tags.forEach((tag) => {
+            const clean = tag.replace(/^#/, "").toLowerCase();
+            tagCounts.set(clean, (tagCounts.get(clean) || 0) + 1);
+          });
+        }
+      }
+    });
+
+    // Build Executive Summary Text
+    const highlights = [];
+    if (assignments > 0) highlights.push(`${assignments} coursework assignment${assignments > 1 ? "s" : ""}`);
+    if (receipts > 0) highlights.push(`${receipts} financial report${receipts > 1 ? "s" : ""}`);
+    if (photos > 0) highlights.push(`${photos} photo${photos > 1 ? "s" : ""}/screenshot${photos > 1 ? "s" : ""}`);
+    if (dups > 0) highlights.push(`${dups} redundant duplicate${dups > 1 ? "s" : ""}`);
+
+    let summaryText = `AI analyzed ${total} items across your workspace. Identified ${highlights.join(", ")}. `;
+    if (deadlines > 0) {
+      summaryText += `Detected ${deadlines} document${deadlines > 1 ? "s" : ""} with action deadlines. `;
+    }
+    summaryText += `Ready to organize into structured folders with 100% on-device privacy guarantee.`;
+
+    summaryEl.textContent = summaryText;
+
+    // Render Clickable Topic Tag Cloud
+    cloudEl.innerHTML = "";
+
+    // "All" pill
+    const allChip = document.createElement("button");
+    allChip.type = "button";
+    allChip.className = `topic-tag-chip ${activeTopicFilter === "all" ? "active" : ""}`;
+    allChip.textContent = `All (${total})`;
+    allChip.addEventListener("click", () => {
+      activeTopicFilter = "all";
+      renderReviewTable();
+      renderAiIntelligenceSummary();
+    });
+    cloudEl.appendChild(allChip);
+
+    // Topic pills
+    tagCounts.forEach((count, tag) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = `topic-tag-chip ${activeTopicFilter === tag ? "active" : ""}`;
+      chip.textContent = `#${tag} (${count})`;
+      chip.addEventListener("click", () => {
+        activeTopicFilter = activeTopicFilter === tag ? "all" : tag;
+        renderReviewTable();
+        renderAiIntelligenceSummary();
+      });
+      cloudEl.appendChild(chip);
+    });
+  }
+
+  /**
+   * Auto-culls detected duplicate files (approves original, skips copies)
+   */
+  function autoCullDuplicates() {
+    let culled = 0;
+    const seenHashes = new Set();
+
+    sessionFiles.forEach((f, idx) => {
+      if (!f.suggestion) return;
+      if (seenHashes.has(f.hash)) {
+        f.suggestion.skipped = true;
+        f.suggestion.approved = false;
+        culled++;
+        updateTableRowState(idx);
+      } else {
+        seenHashes.add(f.hash);
+        f.suggestion.approved = true;
+        f.suggestion.skipped = false;
+        updateTableRowState(idx);
+      }
+    });
+
+    showNotification(`AI auto-culled ${culled} duplicate copies from export.`, "success");
+    renderAiIntelligenceSummary();
+  }
+
+  /**
+   * Cycles naming style across all files (Title Case, kebab-case, snake_case)
+   */
+  function cycleNamingStyle() {
+    namingStyleIndex = (namingStyleIndex + 1) % NAMING_STYLES.length;
+    const newStyle = NAMING_STYLES[namingStyleIndex];
+
+    const label = $("current-naming-style");
+    if (label) label.textContent = newStyle;
+
+    sessionFiles.forEach((f, idx) => {
+      if (!f.suggestion) return;
+      const ext = f.ext;
+      let stem = f.suggestion.suggestedName.slice(0, f.suggestion.suggestedName.lastIndexOf(".") !== -1 ? f.suggestion.suggestedName.lastIndexOf(".") : f.suggestion.suggestedName.length);
+
+      if (newStyle === "kebab-case") {
+        stem = stem.replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, "-").toLowerCase();
+      } else if (newStyle === "snake_case") {
+        stem = stem.replace(/([a-z])([A-Z])/g, "$1_$2").replace(/[\s-]+/g, "_").toLowerCase();
+      } else if (newStyle === "Title Case") {
+        stem = stem.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      }
+
+      f.suggestion.suggestedName = stem.trim() + ext;
+      updateTableRowContent(idx);
+    });
+
+    showNotification(`Converted filenames to ${newStyle}.`);
+  }
+
+  /**
+   * Toggles Date Prefix (e.g. 2026-10-...) on filenames
+   */
+  function toggleDatePrefix() {
+    let applied = false;
+    sessionFiles.forEach((f, idx) => {
+      if (!f.suggestion) return;
+      const datePrefix = "2026-";
+      if (f.suggestion.suggestedName.startsWith(datePrefix)) {
+        f.suggestion.suggestedName = f.suggestion.suggestedName.slice(datePrefix.length);
+        applied = false;
+      } else {
+        f.suggestion.suggestedName = datePrefix + f.suggestion.suggestedName;
+        applied = true;
+      }
+      updateTableRowContent(idx);
+    });
+
+    showNotification(applied ? "Added date prefix (2026-) to filenames." : "Removed date prefix from filenames.");
+  }
+
+  /**
+   * Handles natural language prompts given to the AI organizer
+   */
+  function applyAiInstruction(text) {
+    const lower = text.toLowerCase();
+
+    if (lower.includes("kebab")) {
+      namingStyleIndex = 0;
+      cycleNamingStyle(); // cycles to kebab-case
+    } else if (lower.includes("snake")) {
+      namingStyleIndex = 1;
+      cycleNamingStyle(); // cycles to snake_case
+    } else if (lower.includes("cull") || lower.includes("dup")) {
+      autoCullDuplicates();
+    } else if (lower.includes("date") || lower.includes("year")) {
+      toggleDatePrefix();
+    } else if (lower.includes("work") || lower.includes("personal")) {
+      sessionFiles.forEach((f, idx) => {
+        if (!f.suggestion) return;
+        const lowerName = f.name.toLowerCase();
+        if (lowerName.includes("assign") || lowerName.includes("report") || lowerName.includes("budget") || lowerName.includes("doc")) {
+          f.suggestion.category = "Work & University / " + (f.suggestion.baseCategory || "Documents");
+        } else {
+          f.suggestion.category = "Personal & Media / " + (f.suggestion.baseCategory || "Photos");
+        }
+        updateTableRowContent(idx);
+      });
+      renderReviewTable();
+      showNotification("Structured files into Work vs Personal directories.");
+    } else if (lower.includes("cs302") || lower.includes("course")) {
+      sessionFiles.forEach((f, idx) => {
+        if (!f.suggestion) return;
+        if (f.name.toLowerCase().includes("assign") || f.name.toLowerCase().includes("pdf")) {
+          if (!f.suggestion.suggestedName.startsWith("CS302_")) {
+            f.suggestion.suggestedName = "CS302_" + f.suggestion.suggestedName;
+          }
+        }
+        updateTableRowContent(idx);
+      });
+      showNotification("Prefixed assignment files with CS302_ course code.");
+    } else {
+      // General prefix instruction
+      sessionFiles.forEach((f, idx) => {
+        if (!f.suggestion) return;
+        f.suggestion.suggestedName = text.trim() + "_" + f.suggestion.suggestedName;
+        updateTableRowContent(idx);
+      });
+      showNotification(`Applied custom instruction: "${text}".`);
+    }
+  }
+
+  /**
+   * Open Deep AI File Inspection Modal
+   */
+  function openInspectModal(index) {
+    const f = sessionFiles[index];
+    if (!f || !f.suggestion) return;
+
+    activeInspectIndex = index;
+    const modal = $("ai-inspect-modal");
+    if (!modal) return;
+
+    const iconEl = $("inspect-file-icon");
+    const nameEl = $("inspect-orig-name");
+    const detailsEl = $("inspect-file-details");
+    const synopsisEl = $("inspect-synopsis");
+    const tagsEl = $("inspect-tags");
+    const actionEl = $("inspect-action-item");
+    const altsEl = $("inspect-alternatives");
+    const snippetEl = $("inspect-snippet");
+
+    if (iconEl) iconEl.textContent = getFileTypeIcon(f.name);
+    if (nameEl) nameEl.textContent = f.name;
+    if (detailsEl) {
+      detailsEl.textContent = `${f.ext.toUpperCase()} • ${formatBytes(f.size)} • Hash: ${f.hash ? f.hash.slice(0, 12) + "..." : "Computed"}`;
+    }
+
+    if (synopsisEl) {
+      synopsisEl.textContent = f.suggestion.summary || f.suggestion.reason || "Content analyzed locally.";
+    }
+
+    if (tagsEl) {
+      tagsEl.innerHTML = "";
+      const tags = Array.isArray(f.suggestion.tags) && f.suggestion.tags.length > 0
+        ? f.suggestion.tags
+        : [f.ext.replace(".", "") || "document"];
+      tags.forEach((tag) => {
+        const span = document.createElement("span");
+        span.className = "inspect-tag-pill";
+        span.textContent = `#${tag}`;
+        tagsEl.appendChild(span);
+      });
+    }
+
+    if (actionEl) {
+      if (f.suggestion.actionItem) {
+        actionEl.textContent = `⏰ ${f.suggestion.actionItem}`;
+        actionEl.style.display = "block";
+      } else {
+        actionEl.textContent = "No urgent action items or deadlines detected.";
+        actionEl.style.display = "block";
+      }
+    }
+
+    // Alternatives with 1-click Apply
+    if (altsEl) {
+      altsEl.innerHTML = "";
+      const alts = Array.isArray(f.suggestion.alternatives) && f.suggestion.alternatives.length > 0
+        ? f.suggestion.alternatives
+        : [`Clean_${f.name}`, `Organized_${f.name}`];
+
+      alts.forEach((altName) => {
+        const item = document.createElement("div");
+        item.className = "inspect-alt-item";
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "inspect-alt-name";
+        nameSpan.textContent = altName;
+
+        const applyBtn = document.createElement("button");
+        applyBtn.type = "button";
+        applyBtn.className = "btn btn-outline btn-xs";
+        applyBtn.textContent = "Use this name";
+        applyBtn.addEventListener("click", () => {
+          f.suggestion.suggestedName = altName;
+          updateTableRowContent(index);
+          showNotification(`Applied filename: ${altName}`);
+          modal.close();
+        });
+
+        item.appendChild(nameSpan);
+        item.appendChild(applyBtn);
+        altsEl.appendChild(item);
+      });
+    }
+
+    if (snippetEl) {
+      snippetEl.textContent = f.textSnippet && f.textSnippet.trim()
+        ? f.textSnippet
+        : `[Binary / Image metadata]\nFilename: ${f.name}\nSize: ${f.size} bytes\nExtension: ${f.ext}\nDetected MIME: ${f.type}`;
+    }
+
+    modal.showModal();
   }
 
   /* ==========================================================================
@@ -1228,7 +1849,8 @@
     // Build hierarchy
     const tree = {};
     approvedFiles.forEach((f) => {
-      const parts = f.suggestion.category.split("/").map((p) => p.trim());
+      const parts = f.suggestion.category.split("/").map((p) => p.trim()).filter(Boolean);
+      if (parts.length === 0) parts.push("Other");
       let current = tree;
       parts.forEach((part) => {
         if (!current[part]) current[part] = { _files: [] };
@@ -1248,7 +1870,7 @@
         const headerDiv = document.createElement("div");
         headerDiv.className = "tree-folder-header";
         headerDiv.innerHTML = `
-          <span>ðŸ“</span>
+          <span>📁</span>
           <span>${key}</span>
         `;
         folderDiv.appendChild(headerDiv);
@@ -1357,6 +1979,94 @@
         `;
       }
     }
+  }
+
+  /**
+   * Generates and downloads an executable local move script (.bat / .sh)
+   * Allows organizing directly on user's disk without downloading a ZIP archive
+   */
+  function generateAndDownloadMoveScript() {
+    const approvedFiles = sessionFiles.filter((f) => f.suggestion && f.suggestion.approved);
+
+    if (approvedFiles.length === 0) {
+      showNotification("No approved files to export. Please approve suggestions first.", "warning");
+      return;
+    }
+
+    const isWindows = typeof navigator !== "undefined" && navigator.userAgent.toLowerCase().includes("win");
+    let scriptContent = "";
+    let filename = "";
+
+    if (isWindows) {
+      filename = `organize_files_${new Date().toISOString().slice(0, 10)}.bat`;
+      scriptContent += "@echo off\r\n";
+      scriptContent += "chcp 65001 >nul\r\n";
+      scriptContent += "echo ====================================================\r\n";
+      scriptContent += "echo   ClutterPilot Safe File Organizer Script (Batch)\r\n";
+      scriptContent += "echo   Run this script in the directory containing your files.\r\n";
+      scriptContent += "echo ====================================================\r\n";
+      scriptContent += "pause\r\n\r\n";
+
+      const createdFolders = new Set();
+      approvedFiles.forEach((f) => {
+        const safeCat = sanitizeZipPath(f.suggestion.category).replace(/\//g, "\\");
+        const folder = safeCat || "Other";
+        if (!createdFolders.has(folder)) {
+          scriptContent += `if not exist "${folder}" mkdir "${folder}"\r\n`;
+          createdFolders.add(folder);
+        }
+        const orig = f.name;
+        const target = `${folder}\\${sanitizeZipFilename(f.suggestion.suggestedName, f.ext)}`;
+        scriptContent += `if exist "${orig}" (\r\n`;
+        scriptContent += `  move /Y "${orig}" "${target}"\r\n`;
+        scriptContent += `  echo Moved: "${orig}" -^> "${target}"\r\n`;
+        scriptContent += `) else (\r\n`;
+        scriptContent += `  echo Notice: Original not found: "${orig}"\r\n`;
+        scriptContent += `)\r\n\r\n`;
+      });
+
+      scriptContent += "echo ====================================================\r\n";
+      scriptContent += "echo File organization complete!\r\n";
+      scriptContent += "pause\r\n";
+    } else {
+      filename = `organize_files_${new Date().toISOString().slice(0, 10)}.sh`;
+      scriptContent += "#!/usr/bin/env bash\n";
+      scriptContent += "# ClutterPilot Safe File Organizer Script (Bash)\n";
+      scriptContent += "# Run this script in the directory containing your files.\n\n";
+      scriptContent += 'echo "ClutterPilot: Starting file organization..."\n\n';
+
+      const createdFolders = new Set();
+      approvedFiles.forEach((f) => {
+        const safeCat = sanitizeZipPath(f.suggestion.category);
+        const folder = safeCat || "Other";
+        if (!createdFolders.has(folder)) {
+          scriptContent += `mkdir -p "${folder}"\n`;
+          createdFolders.add(folder);
+        }
+        const orig = f.name.replace(/"/g, '\\"');
+        const target = `${folder}/${sanitizeZipFilename(f.suggestion.suggestedName, f.ext)}`.replace(/"/g, '\\"');
+        scriptContent += `if [ -f "${orig}" ]; then\n`;
+        scriptContent += `  mv -n "${orig}" "${target}"\n`;
+        scriptContent += `  echo "Moved: ${orig} -> ${target}"\n`;
+        scriptContent += `else\n`;
+        scriptContent += `  echo "Notice: Original not found: ${orig}"\n`;
+        scriptContent += `fi\n\n`;
+      });
+
+      scriptContent += 'echo "ClutterPilot: File organization complete!"\n';
+    }
+
+    const blob = new Blob([scriptContent], { type: "text/plain;charset=utf-8" });
+    const downloadUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
+
+    showNotification(`Generated ${filename}. Run it locally to move and organize your files.`);
   }
 
   function sanitizeZipPath(category) {

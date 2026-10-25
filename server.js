@@ -4,8 +4,8 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "0.0.0.0"; // Strictly bound to local loopback
-const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
-const MODEL = "qwen2.5:1.5b";
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434";
+const MODEL = process.env.OLLAMA_MODEL || "qwen2.5:1.5b";
 
 // Strictly bounded JSON payload for metadata & bounded text snippets only
 app.use(express.json({ limit: "500kb" }));
@@ -30,14 +30,13 @@ app.get("/workspace", (req, res) => {
  * Health check endpoint: verifies local Ollama availability and model presence
  */
 app.get("/api/health", async (req, res) => {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
 
+  try {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/tags`, {
       signal: controller.signal
     });
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       return res.status(503).json({
@@ -69,6 +68,8 @@ app.get("/api/health", async (req, res) => {
       modelAvailable: false,
       message: "Ollama is not running locally at 127.0.0.1:11434"
     });
+  } finally {
+    clearTimeout(timeoutId);
   }
 });
 
@@ -133,15 +134,37 @@ function getExtension(filename) {
 }
 
 /**
+ * Safely extracts and parses JSON even if wrapped in markdown blocks or surrounding text
+ */
+function extractJson(text) {
+  if (typeof text !== "string" || !text.trim()) return null;
+  try {
+    return JSON.parse(text.trim());
+  } catch {
+    const firstBrace = text.indexOf("{");
+    const lastBrace = text.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      try {
+        return JSON.parse(text.slice(firstBrace, lastBrace + 1));
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
+/**
  * Single file AI suggestion handler
  */
 async function generateSuggestionForFile(fileData) {
-  const originalName = String(fileData.filename || "untitled");
+  const data = (fileData && typeof fileData === "object") ? fileData : {};
+  const originalName = String(data.filename || "untitled");
   const originalExt = getExtension(originalName);
-  const fileType = String(fileData.fileType || "");
-  const fileSize = Number(fileData.size || 0);
-  const textSnippet = typeof fileData.textSnippet === "string" 
-    ? fileData.textSnippet.slice(0, 1400).trim() 
+  const fileType = String(data.fileType || "");
+  const fileSize = Number(data.size || 0);
+  const textSnippet = typeof data.textSnippet === "string" 
+    ? data.textSnippet.slice(0, 1400).trim() 
     : "";
 
   const prompt = `You are an AI file organizer and metadata extractor. Suggest a specific, descriptive filename based on the file content/name, keeping the extension "${originalExt}". Pick a sensible category (e.g. "Documents / Assignments", "Documents / Projects", "Receipts", "Images / Photos", "Other").
@@ -165,8 +188,9 @@ Respond ONLY with valid JSON:
   ]
 }`;
 
+  const timeoutMs = parseInt(process.env.AI_TIMEOUT_MS || "25000", 10);
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 120000); // 120s timeout
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/generate`, {
@@ -179,20 +203,22 @@ Respond ONLY with valid JSON:
         format: "json",
         options: {
           temperature: 0.1,
-          num_predict: 140,
+          num_predict: 350,
           num_ctx: 1024
         }
       }),
       signal: controller.signal
     });
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`Ollama request failed with HTTP ${response.status}`);
     }
 
     const result = await response.json();
-    const rawParsed = JSON.parse(result.response);
+    const rawParsed = extractJson(result.response);
+    if (!rawParsed) {
+      throw new Error("Unable to parse valid JSON from AI response");
+    }
 
     // Sanitize and validate the output
     let suggestedName = sanitizeFilename(rawParsed.suggestedName, originalExt);
@@ -251,12 +277,13 @@ Respond ONLY with valid JSON:
       aiGenerated: true
     };
   } catch (err) {
-    clearTimeout(timeoutId);
     // Non-sensitive error log
     console.warn(`[AI Inference Notice] Fallback used (${err.name || "Error"}): ${err.message}`);
 
     // Intelligent heuristic fallback so user workflow is never blocked
     return generateFallbackSuggestion(originalName, originalExt, fileType, textSnippet);
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

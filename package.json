@@ -4,7 +4,8 @@
   "description": "ClutterPilot — Understand your digital clutter, preview a smarter structure, and organize your files without risking the originals.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node test_suite.js"
   },
   "keywords": [
     "file-organization",

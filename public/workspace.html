@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ClutterPilot Workspace â€” 100% local, privacy-first file organization on your device.">
+  <meta name="description" content="ClutterPilot Workspace — 100% local, privacy-first file organization on your device.">
   <meta name="theme-color" content="#FAF8F5">
-  <title>ClutterPilot Workspace â€” Organize Your Files</title>
+  <title>ClutterPilot Workspace — Organize Your Files</title>
 
   <!-- Local stylesheets and client libraries (Zero external CDN links) -->
   <link rel="stylesheet" href="/style.css">
@@ -76,7 +76,7 @@
           <div class="workspace-actions">
             <!-- Privacy Assurance Badge -->
             <div class="workspace-privacy-badge" title="Zero remote storage: Your files and actions are processed strictly in browser memory on this device.">
-              <span class="privacy-badge-icon">ðŸ›¡ï¸</span>
+              <span class="privacy-badge-icon">🛡️</span>
               <span class="privacy-badge-text">In-Memory Only &bull; Nothing saved to our website</span>
             </div>
 
@@ -550,7 +550,7 @@
                     <p class="zip-card-desc">Download an organized folder structure with your approved files and new names.</p>
                   </div>
                   <div class="zip-badge-icon" aria-hidden="true">
-                    ðŸ“¦
+                    📦
                   </div>
                 </div>
 
@@ -563,13 +563,21 @@
                   Download Organized Files (.ZIP)
                 </button>
 
-                <p class="zip-reassurance">Original files remain untouched on your computer.</p>
+                <button type="button" id="btn-download-script" class="btn btn-outline btn-md btn-full mt-2" title="Download an executable script to organize original files directly on disk">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 17 10 11 4 5"/>
+                    <line x1="12" y1="19" x2="20" y2="19"/>
+                  </svg>
+                  Download Move Script (.bat / .sh)
+                </button>
+
+                <p class="zip-reassurance">Original files remain untouched unless you choose to run the script.</p>
               </div>
 
               <!-- Reassurance Card -->
               <div class="export-info-card">
                 <h4 class="info-card-title">
-                  <span class="info-icon">ðŸ“‹</span>
+                  <span class="info-icon">📋</span>
                   What happens after export?
                 </h4>
                 <ul class="info-checklist">
@@ -617,7 +625,7 @@
         <p class="footer-tagline">&ldquo;Understand your digital clutter, preview a smarter structure, and organize your files without risking the originals.&rdquo;</p>
         <div class="footer-privacy-pill">
           <span class="status-dot online"></span>
-          <span> Cloud Hosted Â· File Organization Available</span>
+          <span> Cloud Hosted · File Organization Available</span>
         </div>
       </div>
 
@@ -630,7 +638,7 @@
         </div>
         <div class="footer-col">
           <h4>Privacy</h4>
-          <a href="/#privacy">Privacy Principles</a>
+          <button type="button" class="link-btn" id="btn-open-privacy-modal">Privacy Principles</button>
           <button type="button" class="link-btn" id="footer-clear-btn">Reset Workspace</button>
         </div>
         <div class="footer-col">
@@ -680,7 +688,7 @@
       </div>
       <div class="modal-body">
         <div class="privacy-notice-box">
-          <span class="notice-icon">ðŸ›¡ï¸</span>
+          <span class="notice-icon">🛡️</span>
           <p><strong>Your files are never saved on our website.</strong></p>
         </div>
         <p class="mt-2">All files and actions you perform are kept strictly in your computer's temporary browser memory.</p>
@@ -755,6 +763,43 @@
       </div>
       <div class="modal-footer">
         <button type="button" id="btn-close-inspect" class="btn btn-primary btn-sm">Done</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- PRIVACY DETAILS MODAL -->
+  <dialog id="privacy-modal" class="custom-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">ClutterPilot Privacy Architecture</h3>
+        <button type="button" id="btn-close-privacy-modal" class="modal-close-btn" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body privacy-modal-body">
+        <div class="privacy-audit-badge">
+          <span class="badge-icon">🛡️</span>
+          <div>
+            <strong>Verified Local-First Architecture</strong>
+            <p>Every byte of your data remains on this personal computer.</p>
+          </div>
+        </div>
+
+        <h4>1. In-Browser File Selection</h4>
+        <p>When you select files, the browser loads file metadata and binary buffers directly into JavaScript memory. No network payload is created, and nothing is transmitted over the internet.</p>
+
+        <h4>2. Client-Side Hash &amp; Duplicate Check</h4>
+        <p>Exact duplicate detection runs entirely inside your browser using the native Web Crypto API (<code>crypto.subtle.digest('SHA-256')</code>). It never hits an external database.</p>
+
+        <h4>3. Local AI Inference via Ollama</h4>
+        <p>When you click &ldquo;Start AI Analysis&rdquo;, ClutterPilot sends only bounded text snippets (truncated to ~250 characters) and file metadata to the local Express server on <code>127.0.0.1:3000</code>. Express forwards this request exclusively to your local Ollama instance on <code>127.0.0.1:11434</code> running the <code>qwen2.5:1.5b</code> model. Zero third-party cloud APIs are contacted.</p>
+
+        <h4>4. Zero Storage &amp; Forensic Cleanliness</h4>
+        <p>ClutterPilot writes zero user file contents to <code>localStorage</code>, <code>sessionStorage</code>, <code>IndexedDB</code>, cookies, or disk caches. When you close the tab or click &ldquo;Reset Workspace&rdquo;, in-memory references are wiped immediately.</p>
+
+        <h4>5. Safe ZIP &amp; Script Generation</h4>
+        <p>The organized archive is assembled completely client-side via JSZip in your browser memory and downloaded directly to your Downloads folder. Your original source files remain completely untouched.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-close-privacy-bottom" class="btn btn-primary btn-sm">Understood</button>
       </div>
     </div>
   </dialog>
