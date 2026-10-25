@@ -91,11 +91,11 @@ If your `package.json` defines a start script, you can use `npm start` instead.
 
 ### 5. Open the application
 
-If the server is configured to use port 3000, open:
 
-[http://127.0.0.1:3000](http://127.0.0.1:3000)
 
-If your application uses a different port, use the address printed in the terminal.
+
+
+
 
 ## Privacy and File Safety
 
