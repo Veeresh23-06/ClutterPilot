@@ -155,6 +155,8 @@
           if (sessionFiles.length > 0) {
             if (stepNum === 5) renderExportPreview();
             setWorkspaceStep(stepNum);
+          } else if (stepNum > 1) {
+            showNotification("Please select files first or click 'Try with Sample Files'.", "info");
           }
         });
       }
@@ -188,6 +190,21 @@
 
   function setWorkspaceStep(step) {
     currentStep = step;
+
+    // Ensure Step 4 suggestions and review table are rendered if navigating directly
+    if (step === 4) {
+      if (sessionFiles.length > 0) {
+        sessionFiles.forEach((f) => {
+          if (!f.suggestion) {
+            f.suggestion = generateClientRuleSuggestion(f);
+          }
+          if (f.selected === undefined) {
+            f.selected = true;
+          }
+        });
+      }
+      renderReviewTable();
+    }
 
     // Views
     const views = {
@@ -1013,6 +1030,20 @@
     if (!tbody) return;
 
     tbody.innerHTML = "";
+
+    if (sessionFiles.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.95rem;">
+            No files in workspace yet.<br>
+            <span style="font-size: 0.85rem; display: inline-block; margin-top: 8px;">
+              Please go back to <strong>Step 1</strong> to upload files or click &ldquo;Try with Sample Files&rdquo;.
+            </span>
+          </td>
+        </tr>
+      `;
+      return;
+    }
 
     sessionFiles.forEach((fileRecord, index) => {
       const sugg = fileRecord.suggestion;
